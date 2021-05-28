@@ -4,7 +4,8 @@ import { IntegerToTuple } from './IntegerToTuple';
 
 /**
  * Adds two positive integers together.
- * Note: TypeScript currently guards against sums greater than about 80.
+ * Note: TypeScript currently guards against sums greater than about
+ * 80 because of the deep recursion required.
  */
 export type AddPositiveIntegers<
 	Number1 extends number,
