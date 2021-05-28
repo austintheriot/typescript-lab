@@ -22,7 +22,7 @@ checks([
 	check<IsPlainNumberOrPositive<5.0>, true, Test.Pass>(),
 	check<IsPlainNumberOrPositive<1.9999>, true, Test.Pass>(),
 
-	// should return false for 0, generic numbers, and negative numbers
+	// should return false for 0 and negative numbers
 	check<IsPlainNumberOrPositive<0>, false, Test.Pass>(),
 	check<IsPlainNumberOrPositive<-1>, false, Test.Pass>(),
 	check<IsPlainNumberOrPositive<-100>, false, Test.Pass>(),
