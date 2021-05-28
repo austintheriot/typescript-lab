@@ -1,11 +1,11 @@
 import { Test } from 'ts-toolbelt';
 import { MakeIndexes } from './MakeIndexes';
-import { RemoveHead } from './RemoveHead';
+import { RemoveFirstElement } from './RemoveFirstElement';
 
 const { checks, check } = Test;
 
 /**
- * Removes the first element from a tuple.
+ * Converts a tuple of strings into a single string.
  */
 export type TupleToString<
 	Tuple extends string[],
@@ -13,7 +13,7 @@ export type TupleToString<
 > = Tuple extends string[]
 	? Tuple['length'] extends 0
 		? _StorageString
-		: TupleToString<RemoveHead<Tuple>, `${_StorageString}${Tuple[0]}`>
+		: TupleToString<RemoveFirstElement<Tuple>, `${_StorageString}${Tuple[0]}`>
 	: never;
 
 checks([
