@@ -1,6 +1,4 @@
 import { Test } from 'ts-toolbelt';
-import { At } from 'ts-toolbelt/out/Any/At';
-import { Split } from 'ts-toolbelt/out/String/_api';
 const { checks, check } = Test;
 import { IntegerToTuple } from './IntegerToTuple';
 import { IsZeroOrPositiveInteger } from './IsZeroOrPositiveInteger';

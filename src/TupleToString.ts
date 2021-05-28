@@ -1,5 +1,4 @@
 import { Test } from 'ts-toolbelt';
-import { MakeIndexes } from './MakeIndexes';
 import { RemoveFirstElement } from './RemoveFirstElement';
 
 const { checks, check } = Test;
