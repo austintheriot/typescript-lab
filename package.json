@@ -11,6 +11,9 @@
   "license": "ISC",
   "devDependencies": {
     "tsc-watch": "^4.2.9",
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "ts-toolbelt": "^9.6.0"
   }
 }
