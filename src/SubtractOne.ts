@@ -2,12 +2,15 @@ import { Test } from "ts-toolbelt";
 const { checks, check } = Test;
 import { IntegerToTuple } from "./IntegerToTuple";
 import { IsZeroOrPositiveInteger } from "./IsZeroOrPositiveInteger";
-import { Shift } from "./Shift";
+import { ShiftTuple } from "./ShiftTuple";
 
+/**
+ * Given a positive integer, subtracts one.
+ */
 export type SubtractOne<N extends number> =
   IsZeroOrPositiveInteger<N> extends true
-    ? Shift<IntegerToTuple<N>> extends any[]
-      ? Shift<IntegerToTuple<N>>["length"]
+    ? ShiftTuple<IntegerToTuple<N>> extends unknown[]
+      ? ShiftTuple<IntegerToTuple<N>>["length"]
       : never
     : never;
 

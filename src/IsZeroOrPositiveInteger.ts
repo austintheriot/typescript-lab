@@ -17,6 +17,6 @@ checks([
 	check<IsZeroOrPositiveInteger<-50>, false, Test.Pass>(),
 	check<IsZeroOrPositiveInteger<-1000>, false, Test.Pass>(),
 
-	// @todo: should reject plain number types
+	// should reject plain number types
 	check<IsZeroOrPositiveInteger<number>, never, Test.Fail>(),
 ]);
