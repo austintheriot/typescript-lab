@@ -5,16 +5,25 @@ const { checks, check } = Test;
  * Corresponds string version of integers to their number equivalents.
  */
 export interface Numbers {
-  '0': 0,
-  '1': 1,
-  '2': 2,
-  '3': 3,
-  '4': 4,
-  '5': 5,
-  '6': 6,
-  '7': 7,
   '8': 8,
   '9': 9,
+  '7': 7,
+  '6': 6,
+  '5': 5,
+  '4': 4,
+  '3': 3,
+  '2': 2,
+  '1': 1,
+  '0': 0,
+  '-1': -1,
+  '-2': -2,
+  '-3': -3,
+  '-4': -4,
+  '-5': -5,
+  '-6': -6,
+  '-7': -7,
+  '-8': -8,
+  '-9': -9
 }
 
 /**
@@ -26,16 +35,25 @@ export type ParseInt<S extends unknown> = S extends `${infer N}` ? (
 
 checks([
   // should infer the integer correctly
-  check<ParseInt<'0'>, 0, Test.Pass>(),
-  check<ParseInt<'1'>, 1, Test.Pass>(),
-  check<ParseInt<'2'>, 2, Test.Pass>(),
-  check<ParseInt<'3'>, 3, Test.Pass>(),
-  check<ParseInt<'4'>, 4, Test.Pass>(),
-  check<ParseInt<'5'>, 5, Test.Pass>(),
-  check<ParseInt<'6'>, 6, Test.Pass>(),
-  check<ParseInt<'7'>, 7, Test.Pass>(),
-  check<ParseInt<'8'>, 8, Test.Pass>(),
   check<ParseInt<'9'>, 9, Test.Pass>(),
+  check<ParseInt<'8'>, 8, Test.Pass>(),
+  check<ParseInt<'7'>, 7, Test.Pass>(),
+  check<ParseInt<'6'>, 6, Test.Pass>(),
+  check<ParseInt<'5'>, 5, Test.Pass>(),
+  check<ParseInt<'4'>, 4, Test.Pass>(),
+  check<ParseInt<'3'>, 3, Test.Pass>(),
+  check<ParseInt<'2'>, 2, Test.Pass>(),
+  check<ParseInt<'1'>, 1, Test.Pass>(),
+  check<ParseInt<'0'>, 0, Test.Pass>(),
+  check<ParseInt<'-1'>, -1, Test.Pass>(),
+  check<ParseInt<'-2'>, -2, Test.Pass>(),
+  check<ParseInt<'-3'>, -3, Test.Pass>(),
+  check<ParseInt<'-4'>, -4, Test.Pass>(),
+  check<ParseInt<'-5'>, -5, Test.Pass>(),
+  check<ParseInt<'-6'>, -6, Test.Pass>(),
+  check<ParseInt<'-7'>, -7, Test.Pass>(),
+  check<ParseInt<'-8'>, -8, Test.Pass>(),
+  check<ParseInt<'-9'>, -9, Test.Pass>(),
 
   // should return never for bogus types
   check<ParseInt<string>, never, Test.Pass>(),
