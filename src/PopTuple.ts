@@ -1,5 +1,5 @@
 import { Test } from "ts-toolbelt";
-import { SubtractOne } from "./SubtractOne";
+import { SubtractOneFromPositive } from "./SubtractOneFromPositive";
 
 const { checks, check } = Test;
 
@@ -9,7 +9,10 @@ const { checks, check } = Test;
 export type PopTuple<
   Tuple extends unknown[],
   _TupleStorage extends unknown[] = []
-> = (_TupleStorage["length"] extends SubtractOne<Tuple["length"]>
+  > =
+  Tuple['length'] extends 0
+  ? Tuple
+  : (_TupleStorage["length"] extends SubtractOneFromPositive<Tuple["length"]>
   ? _TupleStorage
   : PopTuple<Tuple, [..._TupleStorage, Tuple[_TupleStorage["length"]]]>);
 

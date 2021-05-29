@@ -13,6 +13,8 @@ const { checks, check } = Test;
  */
 export type PopString<S extends unknown> = IsUnionWith<S, string> extends true
   ? never
+  : S extends ""
+  ? ""
   : IsPlainString<S> extends true
   ? never
   : S extends string
