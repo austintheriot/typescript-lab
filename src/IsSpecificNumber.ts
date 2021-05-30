@@ -1,7 +1,9 @@
 
 import { Test } from 'ts-toolbelt';
 import { IsPlainNumber } from './IsPlainNumber';
-const { checks, check } = Test;export type IsSpecificNumber<N extends number> = IsPlainNumber<N> extends true ? false : true;
+const { checks, check } = Test;
+
+export type IsSpecificNumber<N extends number> = IsPlainNumber<N> extends true ? false : true;
 
 checks([
 	// should return false for generic number type
