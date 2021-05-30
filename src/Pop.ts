@@ -14,25 +14,23 @@ export type Pop<T extends unknown> = T extends string
 
 checks([
   // if string, should should pop the last element off of a string
-  check<PopString<"Hello world!...">, "Hello world!..", Test.Pass>(),
-  check<PopString<"Hello world!">, "Hello world", Test.Pass>(),
-  check<PopString<"example">, "exampl", Test.Pass>(),
-  check<PopString<"abc">, "ab", Test.Pass>(),
+  check<Pop<"Hello world!...">, "Hello world!..", Test.Pass>(),
+  check<Pop<"Hello world!">, "Hello world", Test.Pass>(),
+  check<Pop<"example">, "exampl", Test.Pass>(),
+  check<Pop<"abc">, "ab", Test.Pass>(),
 
   // should return itself when given an empty string
-  check<PopString<"">, "", Test.Pass>(),
+  check<Pop<"">, "", Test.Pass>(),
 
   // if tuple, should remove the last element from a tuple
-  check<PopTuple<[number, string, boolean]>, [number, string], Test.Pass>(),
-  check<PopTuple<[0, 1, 2]>, [0, 1], Test.Pass>(),
-  check<PopTuple<[""]>, [], Test.Pass>(),
+  check<Pop<[number, string, boolean]>, [number, string], Test.Pass>(),
+  check<Pop<[0, 1, 2]>, [0, 1], Test.Pass>(),
+  check<Pop<[""]>, [], Test.Pass>(),
 
   // should return itself when given an empty tuple
-  check<PopTuple<[]>, [], Test.Pass>(),
+  check<Pop<[]>, [], Test.Pass>(),
 
   // should return never for bogus inputs
-  check<PopString<"a" | boolean>, never, Test.Pass>(),
-  check<PopString<string>, never, Test.Pass>(),
-  check<PopString<number>, never, Test.Pass>(),
-  check<PopString<[]>, never, Test.Pass>(),
+  check<Pop<string>, never, Test.Pass>(),
+  check<Pop<number>, never, Test.Pass>(),
 ]);
