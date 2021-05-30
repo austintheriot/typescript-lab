@@ -27,10 +27,18 @@ checks([
   check<ShiftString<"example">, "xample", Test.Pass>(),
   check<ShiftString<"abc">, "bc", Test.Pass>(),
   check<ShiftString<"">, "", Test.Pass>(),
-
+  
   // should return never for bogus inputs
   check<ShiftString<"a" | boolean>, never, Test.Pass>(),
   check<ShiftString<string>, never, Test.Pass>(),
   check<ShiftString<number>, never, Test.Pass>(),
   check<ShiftString<[]>, never, Test.Pass>(),
+
+  // should remove the first element from a tuple
+  check<ShiftTuple<[number, string, boolean]>, [string, boolean], Test.Pass>(),
+  check<ShiftTuple<[0, 1, 2]>, [1, 2], Test.Pass>(),
+  check<ShiftTuple<[""]>, [], Test.Pass>(),
+
+  // empty tuple should return itself
+  check<ShiftTuple<[]>, [], Test.Pass>(),
 ]);

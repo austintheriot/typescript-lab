@@ -10,7 +10,7 @@ const { checks, check } = Test;
  * ['a', 'b', 'c'] --> 'abc'
  */
 export type Join<
-  Tuple extends string[],
+  Tuple extends unknown[],
   _StorageString extends string = ""
 > = Tuple extends string[]
   ? Tuple["length"] extends 0

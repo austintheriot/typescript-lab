@@ -23,6 +23,7 @@ export type PopString<S extends unknown> = IsUnionWith<S, string> extends true
     : never
   : never;
 
+
 checks([
   // should pop the last element off of a string
   check<PopString<"Hello world!">, "Hello world", Test.Pass>(),
