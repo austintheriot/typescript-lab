@@ -5,7 +5,7 @@ const { checks, check } = Test;
 /**
  * Returns the first character from a string.
  */
-type FirstCharacter<S extends string> = IsTemplateLiteral<S> extends true
+export type FirstCharacter<S extends string> = IsTemplateLiteral<S> extends true
 	? S extends `${infer First}${string}`
 		? First
 		: S
