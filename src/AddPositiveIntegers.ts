@@ -18,6 +18,9 @@ checks([
 	check<AddPositiveIntegers<1, 1>, 2, Test.Pass>(),
 	check<AddPositiveIntegers<5, 10>, 15, Test.Pass>(),
 	check<AddPositiveIntegers<40, 40>, 80, Test.Pass>(),
+	check<AddPositiveIntegers<100, 100>, 200, Test.Pass>(),
+	check<AddPositiveIntegers<500, 500>, 1000, Test.Pass>(),
+	check<AddPositiveIntegers<999, 999>, 1998, Test.Pass>(),
 
 	// should throw on false additions
 	check<AddPositiveIntegers<0, 0>, 1, Test.Fail>(),
