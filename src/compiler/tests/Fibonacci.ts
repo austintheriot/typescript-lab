@@ -22,4 +22,5 @@ checks([
   check<Fibonacci<8>, 21, Test.Pass>(),
   check<Fibonacci<9>, 34, Test.Pass>(),
   check<Fibonacci<10>, 55, Test.Pass>(),
+  check<Fibonacci<11>, 89, Test.Pass>(),
 ]);
