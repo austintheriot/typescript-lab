@@ -4,10 +4,16 @@ import { Before } from './Before';
 import { After } from './After';
 import { GreaterThanOrEqualTo } from '../math/GreaterThanOrEqualTo';
 
-export type Write<Memory extends number[], Index extends number, Value extends number> =
-  GreaterThanOrEqualTo<Index, Memory['length']> extends true
-  ? Memory
-  : [...Before<Memory, Index>, Value, ...After<Memory, Index>];
+export type Write<Memory extends number[], Index, Value> =
+  Value extends number ? (
+    Index extends number ? (
+      GreaterThanOrEqualTo<Index, Memory['length']> extends true
+      ? Memory
+      : [...Before<Memory, Index>, Value, ...After<Memory, Index>]
+    )
+    : never
+  )
+  : never;
 
 checks([
   check<Write<[0, 0, 0, 0, 0], 1, 6>, [0, 6, 0, 0, 0], Test.Pass>(),
