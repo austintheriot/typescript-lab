@@ -1,6 +1,6 @@
 import { Test } from 'ts-toolbelt';
-import { Add } from "./Add";
-import { Dec } from "./Dec";
+import { Add } from "../math/Add";
+import { Dec } from "../math/Dec";
 const { checks, check } = Test;
 
 type _Fibonacci<A, B, N = 0> = N extends 0
