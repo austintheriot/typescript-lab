@@ -5,8 +5,8 @@ const { checks, check } = Test;
 type Operator<X> = X | null;
 
 /** Applies the Operator to each element in the tuple.
- * This is more of a proof of concept than anything, since Generics cannot be passed in
- * as Generic arguments and so cannot be reused in different ForEach functions */
+ * This is more of a proof of concept than anything, since a generic cannot be passed in
+ * as an argument for another generic and so cannot be reused in different ForEach functions */
 export type ForEach<A extends unknown[], StorageTuple extends unknown[] = []> = A['length'] extends 0
   ? StorageTuple : ForEach<ShiftTuple<A>, [...StorageTuple, Operator<A[0]>]>;
 

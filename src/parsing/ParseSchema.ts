@@ -1,4 +1,4 @@
-import { ShiftTuple } from './ShiftTuple';
+import { ShiftTuple } from '../older/ShiftTuple';
 import { Test } from "ts-toolbelt";
 const { checks, check } = Test;
 
