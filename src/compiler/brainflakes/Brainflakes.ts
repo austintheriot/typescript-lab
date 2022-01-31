@@ -22,8 +22,12 @@ interface ProgramState {
 }
 
 export type Brainflakes<State extends ProgramState> =
+  // no more source code left, return state
+  State['source'] extends ""
+  ? State
+  
   // while loop (nop for now)
-  State['source'] extends `[${infer Subroutine}]${infer Rest}`
+  : State['source'] extends `[${infer Subroutine}]${infer Rest}`
   ? Brainflakes<{
     heap: State['heap'],
     heapPointer: State['heapPointer'],
@@ -33,87 +37,85 @@ export type Brainflakes<State extends ProgramState> =
     output: "",
   }>
 
-  : State['source'] extends `${infer Ch}${infer Rest}`
-  ? (
-    // pointer increment >
-    Ch extends '>'
-    ? Brainflakes<{
-      heap: State['heap'],
-      heapPointer: Inc<State['heapPointer']>,
-      source: Rest,
-      input: State['input'],
-      inputPointer: State['inputPointer'],
-      output: State['output'],
-    }>
+  // pointer increment >
+  : State['source'] extends `>${infer Rest}`
+  ? Brainflakes<{
+    heap: State['heap'],
+    heapPointer: Inc<State['heapPointer']>,
+    source: Rest,
+    input: State['input'],
+    inputPointer: State['inputPointer'],
+    output: State['output'],
+  }>
 
-    // pointer decrement <
-    : Ch extends '<'
-    ? Brainflakes<{
-      heap: State['heap'],
-      heapPointer: Dec<State['heapPointer']>,
-      source: Rest,
-      input: State['input'],
-      inputPointer: State['inputPointer'],
-      output: State['output'],
-    }>
+  // pointer decrement <
+  : State['source'] extends `<${infer Rest}`
+  ? Brainflakes<{
+    heap: State['heap'],
+    heapPointer: Dec<State['heapPointer']>,
+    source: Rest,
+    input: State['input'],
+    inputPointer: State['inputPointer'],
+    output: State['output'],
+  }>
 
-    // increment at pointer +
-    : Ch extends '+'
-    ? Brainflakes<{
-      heap: IncAtIndex<State['heap'], State['heapPointer']>,
-      heapPointer: State['heapPointer'],
-      source: Rest,
-      input: State['input'],
-      inputPointer: State['inputPointer'],
-      output: State['output'],
-    }>
+  // increment at pointer +
+  : State['source'] extends `+${infer Rest}`
+  ? Brainflakes<{
+    heap: IncAtIndex<State['heap'], State['heapPointer']>,
+    heapPointer: State['heapPointer'],
+    source: Rest,
+    input: State['input'],
+    inputPointer: State['inputPointer'],
+    output: State['output'],
+  }>
 
-    // decrement at pointer -
-    : Ch extends '-'
-    ? Brainflakes<{
-      heap: DecAtIndex<State['heap'], State['heapPointer']>,
-      heapPointer: State['heapPointer'],
-      source: Rest,
-      input: State['input'],
-      inputPointer: State['inputPointer'],
-      output: State['output'],
-    }>
+  // decrement at pointer -
+  : State['source'] extends `-${infer Rest}`
+  ? Brainflakes<{
+    heap: DecAtIndex<State['heap'], State['heapPointer']>,
+    heapPointer: State['heapPointer'],
+    source: Rest,
+    input: State['input'],
+    inputPointer: State['inputPointer'],
+    output: State['output'],
+  }>
 
-    // output character at pointer .
-    : Ch extends '.'
-    ? Brainflakes<{
-      heap: State['heap'],
-      heapPointer: State['heapPointer'],
-      source: Rest,
-      input: State['input'],
-      inputPointer: State['inputPointer'],
-      output: `${State['output']}${State['heap'][State['heapPointer']]}`
-    }>
+  // output character at pointer .
+  : State['source'] extends `.${infer Rest}`
+  ? Brainflakes<{
+    heap: State['heap'],
+    heapPointer: State['heapPointer'],
+    source: Rest,
+    input: State['input'],
+    inputPointer: State['inputPointer'],
+    output: `${State['output']}${State['heap'][State['heapPointer']]}`
+  }>
 
-    // input character at pointer ,
-    : Ch extends ','
-    ? Brainflakes<{
-      heap: Write<State['heap'], State['heapPointer'], State['input'][State['inputPointer']]>,
-      heapPointer: State['heapPointer'],
-      source: Rest,
-      input: State['input'],
-      inputPointer: Inc<State['inputPointer']>,
-      output: State['output'],
-    }>
+  // input character at pointer ,
+  : State['source'] extends `,${infer Rest}`
+  ? Brainflakes<{
+    heap: Write<State['heap'], State['heapPointer'], State['input'][State['inputPointer']]>,
+    heapPointer: State['heapPointer'],
+    source: Rest,
+    input: State['input'],
+    inputPointer: Inc<State['inputPointer']>,
+    output: State['output'],
+  }>
 
-    // non-legal character: nop
-    : Brainflakes<{
-      heap: State['heap'],
-      heapPointer: State['heapPointer'],
-      source: Rest,
-      input: State['input'],
-      inputPointer: State['inputPointer'],
-      output: State['output'],
-    }>
-  )
+  : State['source'] extends `${infer _Ch}${infer Rest}`
+  // non-legal character: nop
+  ? Brainflakes<{
+    heap: State['heap'],
+    heapPointer: State['heapPointer'],
+    source: Rest,
+    input: State['input'],
+    inputPointer: State['inputPointer'],
+    output: State['output'],
+  }>
 
-  // no more source code left: return state
-  : State;
+  // unreachable case
+  : never;
 
 checks([
   // pointer increment >
