@@ -1,8 +1,10 @@
 import { Test } from 'ts-toolbelt';
 import { NewTuple } from './NewTuple';
+import { ToNumber } from './ToNumber';
 const { checks, check } = Test;
 
-export type Inc<N> = [...NewTuple<N>, 0]['length'];
+// wrapped ToNumber here, since TS thinks this does not always return a number
+export type Inc<N> = ToNumber<[...NewTuple<N>, 0]['length']>;
 
 checks([
   check<Inc<0>, 1, Test.Pass>(),
