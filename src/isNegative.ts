@@ -1,15 +1,11 @@
 import { Test } from 'ts-toolbelt';
-import { Split } from 'ts-toolbelt/out/String/_api';
-import { IsPlainNumberOrPositive } from './IsPositive';
 const { checks, check } = Test;
 
 export type IsNegative<N extends number> = N extends 0
 	? false
-	: Split<`${N}`>[0] extends '-'
+	: `${N}` extends `-${number}`
 	? true
-	: IsPlainNumberOrPositive<N> extends true
-	? false
-	: never;
+	: false;
 
 checks([
 	// should return true for negative integers
@@ -31,6 +27,6 @@ checks([
 	check<IsNegative<1.1234>, false, Test.Pass>(),
 	check<IsNegative<100.000009>, false, Test.Pass>(),
 
-	// should reject plain number type
-	check<IsNegative<number>, never, Test.Pass>(),
+	// should reject plain number type ? (undefined behavior)
+	check<IsNegative<number>, false, Test.Pass>(),
 ]);
