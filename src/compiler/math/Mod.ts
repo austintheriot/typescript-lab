@@ -1,17 +1,12 @@
 import { Test } from 'ts-toolbelt';
 import { Sub } from './Sub';
-import { Inc } from './Inc';
 const { checks, check } = Test;
 
-type _Div<N1, N2, Counter = 0> =
+type Mod<N1, N2> = 
   // cannot divide by 0
   N2 extends 0
   ? never
-
-  // divide by 1 === itself
-  : N2 extends 1
-  ? 0
-
+  
   // divide by itself = 1
   : N2 extends N1
   ? 0
@@ -21,9 +16,7 @@ type _Div<N1, N2, Counter = 0> =
   : Sub<N1, N2> extends 0
   ? N1
 
-  : _Div<Sub<N1, N2>, N2, Inc<Counter>>;
-
-type Mod<N1, N2> = _Div<N1, N2, 0>;
+  : Mod<Sub<N1, N2>, N2>;
 
 checks([
   check<Mod<5, 0>, never, Test.Pass>(),
