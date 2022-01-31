@@ -5,7 +5,7 @@ const { checks, check } = Test;
 export type GreaterThanOrEqualTo<A1, A2> = A1 extends A2
   ? true
   : GreaterThan<A1, A2>
-  ? true
+  ?true
   : false;
 
 checks([

@@ -19,23 +19,13 @@ interface ProgramState {
   inputPointer: number,
   /** Output value from program */
   output: string,
+  /** Saves initial program while completing while loop */
+  savedSource: string
 }
 
 export type Brainflakes<State extends ProgramState> =
-  // no more source code left, return state
   State['source'] extends ""
   ? State
-  
-  // while loop (nop for now)
-  : State['source'] extends `[${infer Subroutine}]${infer Rest}`
-  ? Brainflakes<{
-    heap: State['heap'],
-    heapPointer: State['heapPointer'],
-    source: Rest,
-    input: [],
-    inputPointer: 0,
-    output: "",
-  }>
 
   // pointer increment >
   : State['source'] extends `>${infer Rest}`
@@ -46,6 +36,7 @@ export type Brainflakes<State extends ProgramState> =
     input: State['input'],
     inputPointer: State['inputPointer'],
     output: State['output'],
+    savedSource: State['savedSource'],
   }>
 
   // pointer decrement <
@@ -57,6 +48,7 @@ export type Brainflakes<State extends ProgramState> =
     input: State['input'],
     inputPointer: State['inputPointer'],
     output: State['output'],
+    savedSource: State['savedSource'],
   }>
 
   // increment at pointer +
@@ -68,6 +60,7 @@ export type Brainflakes<State extends ProgramState> =
     input: State['input'],
     inputPointer: State['inputPointer'],
     output: State['output'],
+    savedSource: State['savedSource'],
   }>
 
   // decrement at pointer -
@@ -79,6 +72,7 @@ export type Brainflakes<State extends ProgramState> =
     input: State['input'],
     inputPointer: State['inputPointer'],
     output: State['output'],
+    savedSource: State['savedSource'],
   }>
 
   // output character at pointer .
@@ -90,6 +84,7 @@ export type Brainflakes<State extends ProgramState> =
     input: State['input'],
     inputPointer: State['inputPointer'],
     output: `${State['output']}${State['heap'][State['heapPointer']]}`
+    savedSource: State['savedSource'],
   }>
 
   // input character at pointer ,
@@ -101,10 +96,49 @@ export type Brainflakes<State extends ProgramState> =
     input: State['input'],
     inputPointer: Inc<State['inputPointer']>,
     output: State['output'],
+    savedSource: State['savedSource'],
   }>
 
+  // while loop (start)
+  : State['source'] extends `[${infer Subroutine}]${infer Rest}`
+  // value is zero, ignore while loop
+  ? (State['heap'][State['heapPointer']] extends 0
+    ? Brainflakes<{
+      heap: State['heap'],
+      heapPointer: State['heapPointer'],
+      input: State['input'],
+      inputPointer: State['inputPointer'],
+      output: State['output'],
+      source: Rest,
+      savedSource: State['savedSource'],
+    }>
+
+    // value is not zero, perform subroutine and save original source for later
+    : Brainflakes<{
+      heap: State['heap'],
+      heapPointer: State['heapPointer'],
+      input: State['input'],
+      inputPointer: State['inputPointer'],
+      output: State['output'],
+      source: `${Subroutine}]${Rest}`,
+      savedSource: State['source'],
+    }>
+  )
+
+  // while loop (end)
+  : State['source'] extends `]${infer _Rest}`
+  ? Brainflakes<{
+    heap: State['heap'],
+    heapPointer: State['heapPointer'],
+    source: State['savedSource'],
+    input: State['input'],
+    inputPointer: State['inputPointer'],
+    output: State['output'],
+    savedSource: "",
+  }>
+
+  // non-legal character: ignore
   : State['source'] extends `${infer _Ch}${infer Rest}`
-  // non-legal character: nop
   ? Brainflakes<{
     heap: State['heap'],
     heapPointer: State['heapPointer'],
@@ -112,10 +146,12 @@ export type Brainflakes<State extends ProgramState> =
     input: State['input'],
     inputPointer: State['inputPointer'],
     output: State['output'],
+    savedSource: State['savedSource'],
   }>
 
   // unreachable case
   : never;
+
 
 checks([
   // pointer increment >
@@ -126,6 +162,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 0, 0, 0, 0],
     heapPointer: 1,
@@ -133,6 +170,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }, Test.Pass>(),
 
   // pointer decrement <
@@ -143,6 +181,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 0, 0, 0, 0],
     heapPointer: 0,
@@ -150,6 +189,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }, Test.Pass>(),
 
   // increment at index +
@@ -160,6 +200,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 1, 0, 0, 0],
     heapPointer: 1,
@@ -167,6 +208,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }, Test.Pass>(),
 
   // decrement at index -
@@ -177,6 +219,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 0, 0, 0, 0],
     heapPointer: 1,
@@ -184,8 +227,9 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
-    }, Test.Pass>(),
-  
+    savedSource: "",
+  }, Test.Pass>(),
+
   // output character at pointer .
   check<Brainflakes<{
     heap: [0, 1, 2, 3, 4],
@@ -194,6 +238,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 1, 2, 3, 4],
     heapPointer: 2,
@@ -201,8 +246,9 @@ checks([
     input: [],
     inputPointer: 0,
     output: "2",
-    }, Test.Pass>(),
-  
+    savedSource: "",
+  }, Test.Pass>(),
+
   // input character at pointer ,
   check<Brainflakes<{
     heap: [0, 1, 2, 3, 4],
@@ -211,6 +257,7 @@ checks([
     input: [47],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 1, 47, 3, 4],
     heapPointer: 2,
@@ -218,40 +265,83 @@ checks([
     input: [47],
     inputPointer: 1,
     output: "",
+    savedSource: "",
   }, Test.Pass>(),
 
-  // while loop (nop for now) -- just consume source code
+  // while loop (ignored inner block)
   check<Brainflakes<{
-    heap: [0, 1, 2, 3, 4],
-    heapPointer: 1,
-    source: '[+-<>]',
+    heap: [2, 0, 0, 0, 0],
+    heapPointer: 0,
+    source: '--[+++]',
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
-    heap: [0, 1, 2, 3, 4],
-    heapPointer: 1,
+    heap: [0, 0, 0, 0, 0],
+    heapPointer: 0,
     source: "",
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
+  }, Test.Pass>(),
+
+  // while loop (increment the element to the right by 2 twice)
+  check<Brainflakes<{
+    heap: [2, 1, 0, 0, 0],
+    heapPointer: 0,
+    source: '[>++<-]',
+    input: [],
+    inputPointer: 0,
+    output: "",
+    savedSource: "",
+  }>, {
+    heap: [0, 5, 0, 0, 0],
+    heapPointer: 0,
+    source: "",
+    input: [],
+    inputPointer: 0,
+    output: "",
+    savedSource: "",
+  }, Test.Pass>(),
+
+  // while loop (swap 2 numbers)
+  check<Brainflakes<{
+    heap: [5, 0, 0],
+    heapPointer: 0,
+    source: '[>>+<<-]',
+    input: [],
+    inputPointer: 0,
+    output: "",
+    savedSource: "",
+  }>, {
+    heap: [0, 0, 5],
+    heapPointer: 0,
+    source: "",
+    input: [],
+    inputPointer: 0,
+    output: "",
+    savedSource: "",
   }, Test.Pass>(),
 
   // while loop with instructions afterward
   check<Brainflakes<{
-    heap: [0, 1, 2, 3, 4],
-    heapPointer: 4,
-    source: '[]+',
+    heap: [1, 2, 3, 4, 5],
+    heapPointer: 0,
+    source: '[>+<-]+++',
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
-    heap: [0, 1, 2, 3, 5],
-    heapPointer: 4,
+    heap: [3, 3, 3, 4, 5],
+    heapPointer: 0,
     source: "",
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }, Test.Pass>(),
 
   // unrecognized characters
@@ -262,6 +352,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 1, 2, 3, 4],
     heapPointer: 1,
@@ -269,6 +360,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }, Test.Pass>(),
 
   check<Brainflakes<{
@@ -278,6 +370,7 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }>, {
     heap: [0, 1, 2, 3, 4],
     heapPointer: 1,
@@ -285,5 +378,6 @@ checks([
     input: [],
     inputPointer: 0,
     output: "",
+    savedSource: "",
   }, Test.Pass>(),
 ]);
