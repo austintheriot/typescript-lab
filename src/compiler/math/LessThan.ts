@@ -1,20 +1,15 @@
 import { Test } from 'ts-toolbelt';
-import { PopTuple } from './PopTuple';
-import { NewTuple } from './NewTuple';
+import { Dec } from './Dec';
 const { checks, check } = Test;
 
-/** Remove elements from both arrays until one is empty */
-type _LessThan<A1 extends number[], A2 extends number[]> =
-  A1['length'] extends A2['length']
+export type LessThan<N1, N2> =
+  N1 extends N2
   ? false
-  : A1['length'] extends 0
+  : N1 extends 0
   ? true
-  : A2['length'] extends 0
+  : N2 extends 0
   ? false
-  : _LessThan<PopTuple<A1>, PopTuple<A2>>
-
-/** Create tuples from elements and compare tuple lengths */
-export type LessThan<N1, N2> = _LessThan<NewTuple<N1>, NewTuple<N2>>;
+  : LessThan<Dec<N1>, Dec<N2>>;
 
 checks([
   check<LessThan<1, 1>, false, Test.Pass>(),

@@ -3,7 +3,7 @@ const { checks, check } = Test;
 
 export type NewTuple<Length, StorageTuple extends 0[] = []> = StorageTuple['length'] extends Length
   ? StorageTuple
-  : NewTuple<Length, [0, ...StorageTuple]>;
+  : NewTuple<Length, [...StorageTuple, 0]>;
 
 checks([
   check<NewTuple<0>, [], Test.Pass>(),

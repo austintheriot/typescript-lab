@@ -1,13 +1,12 @@
 import { Test } from 'ts-toolbelt';
-import { Inc } from './Inc';
-import { Dec } from './Dec';
+import { NewTuple } from './NewTuple';
 const { checks, check } = Test;
 
-export type Add<N1, N2> = N2 extends 0 ? N1 : Add<Inc<N1>, Dec<N2>>;
+export type Add<N1, N2> = [...NewTuple<N1>, ...NewTuple<N2>]['length']
 
 checks([
   check<Add<0, 1>, 1, Test.Pass>(),
   check<Add<1, 7>, 8, Test.Pass>(),
   check<Add<10, 13>, 23, Test.Pass>(),
-  // check<Add<499, 488>, never, Test.Pass>(),
+  check<Add<600, 600>, 1200, Test.Pass>(),
 ]);

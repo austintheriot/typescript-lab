@@ -1,14 +1,8 @@
 import { Test } from 'ts-toolbelt';
-import { Dec } from './Dec';
+import { NewTuple } from './NewTuple';
 const { checks, check } = Test;
 
-export type Sub<N1, N2> = N2 extends 0
-  // nothing left to subtract
-  ? N1
-  // cannot subtract from 0
-  : N1 extends 0
-  ? 0
-  : Sub<Dec<N1>, Dec<N2>>;
+export type Sub<N1, N2> = NewTuple<N1> extends [...(infer Result), ...NewTuple<N2>] ? Result['length'] : 0;
 
 checks([
   check<Sub<1, 1>, 0, Test.Pass>(),
