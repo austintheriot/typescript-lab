@@ -1,6 +1,7 @@
 import { Dec } from '../math/Dec';
 import { Inc } from '../math/Inc';
 import { NewTuple } from '../math/NewTuple';
+import { ToNumericTuple } from '../math/ToNumericTuple';
 import { Write } from '../memory/Write';
 
 export interface ProgramState {
@@ -51,7 +52,7 @@ export type Brainflakes<Source extends string, Input extends number[] = [], Stat
   // increment at pointer +
   : Source extends `+${infer Rest}`
   ? Brainflakes<Rest, Input, {
-    heap: Write<State['heap'], State['heapPointer'], Inc<State['heap'][State['heapPointer']]>>,
+    heap: ToNumericTuple<Write<State['heap'], State['heapPointer'], Inc<State['heap'][State['heapPointer']]>>>,
     heapPointer: State['heapPointer'],
     inputPointer: State['inputPointer'],
     output: State['output'],
@@ -61,7 +62,7 @@ export type Brainflakes<Source extends string, Input extends number[] = [], Stat
   // decrement at pointer -
   : Source extends `-${infer Rest}`
   ? Brainflakes<Rest, Input, {
-    heap: Write<State['heap'], State['heapPointer'], Dec<State['heap'][State['heapPointer']]>>,
+    heap: ToNumericTuple<Write<State['heap'], State['heapPointer'], Dec<State['heap'][State['heapPointer']]>>>,
     heapPointer: State['heapPointer'],
     inputPointer: State['inputPointer'],
     output: State['output'],
@@ -81,7 +82,7 @@ export type Brainflakes<Source extends string, Input extends number[] = [], Stat
   // input character at pointer ,
   : Source extends `,${infer Rest}`
   ? Brainflakes<Rest, Input, {
-    heap: Write<State['heap'], State['heapPointer'], Input[State['inputPointer']]>,
+    heap: ToNumericTuple<Write<State['heap'], State['heapPointer'], Input[State['inputPointer']]>>,
     heapPointer: State['heapPointer'],
     inputPointer: Inc<State['inputPointer']>,
     output: State['output'],

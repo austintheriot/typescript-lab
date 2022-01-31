@@ -3,12 +3,11 @@ const { checks, check } = Test;
 import { Before } from './Before';
 import { After } from './After';
 import { GreaterThanOrEqualTo } from '../math/GreaterThanOrEqualTo';
-import { ToNumericTuple } from '../math/ToNumericTuple';
 
-export type Write<Memory extends number[], Index extends number, Value extends number> =
+export type Write<Memory extends unknown[], Index extends number, Value extends unknown> =
   GreaterThanOrEqualTo<Index, Memory['length']> extends true
   ? Memory
-  : ToNumericTuple<[...Before<Memory, Index>, Value, ...After<Memory, Index>]>;
+  : [...Before<Memory, Index>, Value, ...After<Memory, Index>];
 
 checks([
   check<Write<[0, 0, 0, 0, 0], 1, 6>, [0, 6, 0, 0, 0], Test.Pass>(),
