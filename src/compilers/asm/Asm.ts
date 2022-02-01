@@ -30,9 +30,11 @@ type DROP = 'drop';
 type DUP = 'dup';
 type COMMENT_START = "/*";
 type COMMENT_END = "*/";
+/** Executes the following code block if the last element on the stack is not 0 
+ * After executing the block, returns to the beginning of the loop and performs the check again */
 type WHILE_START = 'while_start';
 type WHILE_END = 'while_end';
-/** Executes the following code block if the 2nd last element on the stack is not 0 */
+/** Executes the following code block if the last element on the stack is not 0 */
 type IF_START = 'if_start';
 type IF_END = 'if_end';
 type VALID_TOKENS = ADD | SUB | PRINT | DROP | DUP | COMMENT_START | COMMENT_END | number | WHILE_START | WHILE_END | IF_START | IF_END;
@@ -163,7 +165,15 @@ type ToTokensTuple<T> = T extends VALID_TOKENS[] ? T : never;
 /** Error if not a number */
 type ToNumber<T> = T extends number ? T : never;
 
-// INTERPRETER MUST ITERATE THROUGH TOKENS AND GENERATE STACK SEPARATELY
+/** Takes a stack of booleans indicating whether a current block should be ignored */
+type ShouldExecute<IgnoreStack extends boolean[]> = IgnoreStack['length'] extends 0
+  // no blocks to ignore, continue executing
+  ? true
+  // last block should not be ignored, continue executing
+  : Last<IgnoreStack> extends false
+  ? true
+  : false
+
 export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterState = DefaultInterpreterState> =
   // no more instructions on the stack
   Tokens['length'] extends 0
@@ -195,24 +205,11 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   }>
 
   // if block: should execute?
-  : (State['ignoreIfBlock']['length'] extends 0
-    // no if blocks to ignore, continue executing
-    ? true
-    // last if block should not be ignored, continue executing
-    : Last<State['ignoreIfBlock']> extends false
-    ? true
-    : false
-  ) extends true ? (
+  : ShouldExecute<State['ignoreIfBlock']> extends true ? (
 
     // while block: should execute?
-    (State['ignoreWhileBlock']['length'] extends 0
-      // no while blocks to ignore, continue executing
-      ? true
-      // last while block should not be ignored, continue executing
-      : Last<State['ignoreWhileBlock']> extends false
-      ? true
-      : false
-    ) extends true ? (
+    ShouldExecute<State['ignoreWhileBlock']> extends true ? (
+
       // NUMBER
       First<Tokens> extends number
       ? Interpret<ToTokensTuple<Shift<Tokens>>, {
@@ -408,7 +405,7 @@ checks([
 
   // LOOP (ONCE)
   check<Interpret<[1, WHILE_START, 1, PRINT, 0, WHILE_END]>, "1", Test.Pass>(),
-  
+
   // todo: test while loop that runs a few times
   // check<Interpret<[1, WHILE_START, 1, PRINT, 1, WHILE_END]>, "1", Test.Fail>(),
 ]);
