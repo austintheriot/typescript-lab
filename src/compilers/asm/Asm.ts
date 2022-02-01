@@ -200,14 +200,15 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   // IF_END: pop off last ignoreIfBlock element
   : Tokens[State['instructionPointer']] extends IF_END
   ? Interpret<Tokens, {
-    instructionPointer: Inc<State['instructionPointer']>,
     stack: State['stack'],
     heap: State['heap'],
     output: State['output'],
     debug: State['debug'],
-    ignoreIfBlock: Pop<State['ignoreIfBlock']>,
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
+
+    ignoreIfBlock: Pop<State['ignoreIfBlock']>,
+    instructionPointer: Inc<State['instructionPointer']>,
     calls: Inc<State['calls']>,
   }>
 
@@ -215,12 +216,13 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   // and return to beginning of loop
   : Tokens[State['instructionPointer']] extends WHILE_END
   ? Interpret<Tokens, {
-    instructionPointer: ToNumber<Last<State['whilePointerStack']>>,
     stack: State['stack'],
     heap: State['heap'],
     output: State['output'],
     debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
+
+    instructionPointer: ToNumber<Last<State['whilePointerStack']>>,
     ignoreWhileBlock: Pop<State['ignoreWhileBlock']>,
     whilePointerStack: Pop<State['whilePointerStack']>,
     calls: Inc<State['calls']>,
@@ -235,84 +237,90 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
       // NUMBER
       Tokens[State['instructionPointer']] extends number
       ? Interpret<Tokens, {
-        instructionPointer: Inc<State['instructionPointer']>,
-        stack: [...State['stack'], Tokens[State['instructionPointer']]],
         heap: State['heap'],
         output: State['output'],
         debug: State['debug'],
         ignoreIfBlock: State['ignoreIfBlock'],
         ignoreWhileBlock: State['ignoreWhileBlock'],
         whilePointerStack: State['whilePointerStack'],
+
+        instructionPointer: Inc<State['instructionPointer']>,
+        stack: [...State['stack'], Tokens[State['instructionPointer']]],
         calls: Inc<State['calls']>,
       }>
 
       // ADD
       : Tokens[State['instructionPointer']] extends ADD
       ? Interpret<Tokens, {
-        instructionPointer: Inc<State['instructionPointer']>,
-        stack: Replace<State['stack'], 2, [ToNumber<Add<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
         heap: State['heap'],
         output: State['output'],
         debug: State['debug'],
         ignoreIfBlock: State['ignoreIfBlock'],
         ignoreWhileBlock: State['ignoreWhileBlock'],
         whilePointerStack: State['whilePointerStack'],
+
+        instructionPointer: Inc<State['instructionPointer']>,
+        stack: Replace<State['stack'], 2, [ToNumber<Add<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
         calls: Inc<State['calls']>,
       }>
 
       // SUB
       : Tokens[State['instructionPointer']] extends SUB
       ? Interpret<Tokens, {
-        instructionPointer: Inc<State['instructionPointer']>,
-        stack: Replace<State['stack'], 2, [ToNumber<Sub<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
         heap: State['heap'],
         output: State['output'],
         debug: State['debug'],
         ignoreIfBlock: State['ignoreIfBlock'],
         ignoreWhileBlock: State['ignoreWhileBlock'],
         whilePointerStack: State['whilePointerStack'],
+
+        instructionPointer: Inc<State['instructionPointer']>,
+        stack: Replace<State['stack'], 2, [ToNumber<Sub<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
         calls: Inc<State['calls']>,
       }>
 
       // DROP
       : Tokens[State['instructionPointer']] extends DROP
       ? Interpret<Tokens, {
-        instructionPointer: Inc<State['instructionPointer']>,
-        stack: Pop<State['stack']>,
         heap: State['heap'],
         output: State['output'],
         debug: State['debug'],
         ignoreIfBlock: State['ignoreIfBlock'],
         ignoreWhileBlock: State['ignoreWhileBlock'],
         whilePointerStack: State['whilePointerStack'],
+
+        instructionPointer: Inc<State['instructionPointer']>,
+        stack: Pop<State['stack']>,
         calls: Inc<State['calls']>,
       }>
 
       // DUP
       : Tokens[State['instructionPointer']] extends DUP
       ? Interpret<Tokens, {
-        instructionPointer: Inc<State['instructionPointer']>,
-        stack: [...State['stack'], ...ToTokensTuple<[Last<State['stack']>]>],
         heap: State['heap'],
         output: State['output'],
         debug: State['debug'],
         ignoreIfBlock: State['ignoreIfBlock'],
         ignoreWhileBlock: State['ignoreWhileBlock'],
         whilePointerStack: State['whilePointerStack'],
+
+        instructionPointer: Inc<State['instructionPointer']>,
+        stack: [...State['stack'], ...ToTokensTuple<[Last<State['stack']>]>],
         calls: Inc<State['calls']>,
       }>
 
       // PRINT
       : Tokens[State['instructionPointer']] extends PRINT
       ? Interpret<Tokens, {
-        instructionPointer: Inc<State['instructionPointer']>,
-        stack: Pop<State['stack']>
         heap: State['heap'],
-        output: `${State['output']}${State['stack'][Dec<State['stack']['length']>]}`,
         debug: State['debug'],
         ignoreIfBlock: State['ignoreIfBlock'],
         ignoreWhileBlock: State['ignoreWhileBlock'],
         whilePointerStack: State['whilePointerStack'],
+
+        instructionPointer: Inc<State['instructionPointer']>,
+        stack: Pop<State['stack']>
+        output: `${State['output']}${State['stack'][Dec<State['stack']['length']>]}`,
         calls: Inc<State['calls']>,
       }>
 
@@ -322,27 +330,29 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
         Last<State['stack']> extends 0
         // skip if block
         ? Interpret<Tokens, {
-          instructionPointer: Inc<State['instructionPointer']>,
-          stack: Pop<State['stack']>,
           heap: State['heap'],
           output: State['output'],
           debug: State['debug'],
-          ignoreIfBlock: [...State['ignoreIfBlock'], true],
           ignoreWhileBlock: State['ignoreWhileBlock'],
           whilePointerStack: State['whilePointerStack'],
+
+          instructionPointer: Inc<State['instructionPointer']>,
+          stack: Pop<State['stack']>,
+          ignoreIfBlock: [...State['ignoreIfBlock'], true],
           calls: Inc<State['calls']>,
         }>
 
         // execute if block
         : Interpret<Tokens, {
-          instructionPointer: Inc<State['instructionPointer']>,
-          stack: Pop<State['stack']>,
           heap: State['heap'],
           output: State['output'],
           debug: State['debug'],
-          ignoreIfBlock: [...State['ignoreIfBlock'], false],
           ignoreWhileBlock: State['ignoreWhileBlock'],
           whilePointerStack: State['whilePointerStack'],
+
+          instructionPointer: Inc<State['instructionPointer']>,
+          stack: Pop<State['stack']>,
+          ignoreIfBlock: [...State['ignoreIfBlock'], false],
           calls: Inc<State['calls']>,
         }>
       )
@@ -353,25 +363,27 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
         Last<State['stack']> extends 0
         // skip while block
         ? Interpret<Tokens, {
-          instructionPointer: Inc<State['instructionPointer']>,
-          stack: Pop<State['stack']>,
           heap: State['heap'],
           output: State['output'],
           debug: State['debug'],
           ignoreIfBlock: State['ignoreIfBlock'],
-          ignoreWhileBlock: [...State['ignoreWhileBlock'], true],
           whilePointerStack: State['whilePointerStack'],
+
+          instructionPointer: Inc<State['instructionPointer']>,
+          stack: Pop<State['stack']>,
+          ignoreWhileBlock: [...State['ignoreWhileBlock'], true],
           calls: Inc<State['calls']>,
         }>
 
         // execute while block
         : Interpret<Tokens, {
-          instructionPointer: Inc<State['instructionPointer']>,
-          stack: Pop<State['stack']>,
           heap: State['heap'],
           output: State['output'],
           debug: State['debug'],
           ignoreIfBlock: State['ignoreIfBlock'],
+
+          instructionPointer: Inc<State['instructionPointer']>,
+          stack: Pop<State['stack']>,
           ignoreWhileBlock: [...State['ignoreWhileBlock'], false],
           whilePointerStack: [...State['whilePointerStack'], State['instructionPointer']],
           calls: Inc<State['calls']>,
@@ -383,7 +395,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     )
     // skip current token in while block
     : Interpret<Tokens, {
-      instructionPointer: Inc<State['instructionPointer']>,
       stack: State['stack'],
       heap: State['heap'],
       output: State['output'],
@@ -391,12 +402,13 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
       ignoreIfBlock: State['ignoreIfBlock'],
       ignoreWhileBlock: State['ignoreWhileBlock'],
       whilePointerStack: State['whilePointerStack'],
+
+      instructionPointer: Inc<State['instructionPointer']>,
       calls: Inc<State['calls']>,
     }>
   )
   // skip current token in if block
   : Interpret<Tokens, {
-    instructionPointer: Inc<State['instructionPointer']>,
     stack: State['stack'],
     heap: State['heap'],
     output: State['output'],
@@ -404,6 +416,8 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
     calls: Inc<State['calls']>,
   }>
 
