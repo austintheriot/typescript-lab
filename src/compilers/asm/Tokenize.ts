@@ -18,77 +18,77 @@ type Dump<Source extends string, State extends TokenizerState> = {
 
 
 /** Translated Tokens directly into a callable call tokens */
-export type Tokenizer<Source extends string, State extends TokenizerState = TokenizerDefaultState> =
+export type Tokenize<Source extends string, State extends TokenizerState = TokenizerDefaultState> =
   // no more tokens left to parse
   Source extends ""
   ? Dump<Source, State>
 
   // ADD
   : Source extends `${ADD}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], ADD],
   }>
 
   // SUB
   : Source extends `${SUB}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], SUB],
   }>
 
   // PRINT
   : Source extends `${PRINT}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], PRINT],
   }>
 
   // DROP
   : Source extends `${DROP}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], DROP],
   }>
   
   // WHILE_START
   : Source extends `${WHILE_START}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], WHILE_START],
   }>
 
   // WHILE_END
   : Source extends `${WHILE_END}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], WHILE_END],
   }>
 
   // IF_START
   : Source extends `${IF_START}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], IF_START],
   }>
 
   // IF_END
   : Source extends `${IF_END}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], IF_END],
   }>
 
   // DUP
   : Source extends `${DUP}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], DUP],
   }>
 
   // COMMENT: ignore comment
   : Source extends `${COMMENT_START}${infer _COMMENT_BLOCK}${COMMENT_END}${infer Rest}`
-  ? Tokenizer<Rest, {
+  ? Tokenize<Rest, {
     error: State['error'],
     tokens: State['tokens'],
   }>
@@ -96,11 +96,11 @@ export type Tokenizer<Source extends string, State extends TokenizerState = Toke
   // NUMBER: ignore comment
   : Source extends `${NUMBER_START}${infer NumberString}${NUMBER_END}${infer Rest}`
   ? (NumberString extends keyof IntegerMap
-    ? Tokenizer<Rest, {
+    ? Tokenize<Rest, {
       error: State['error'],
       tokens: [...State['tokens'], IntegerMap[NumberString]],
     }>
-    : Tokenizer<Rest, {
+    : Tokenize<Rest, {
       error: `${State['error']} Error: number ${NUMBER_START}${NumberString}${NUMBER_END} was not able to be parsed`,
       tokens: State['tokens'],
     }>
@@ -110,7 +110,7 @@ export type Tokenizer<Source extends string, State extends TokenizerState = Toke
   ? (
     // IGNORED TOKENS
     OtherToken extends SEPARATION_TOKEN
-    ? Tokenizer<Rest, {
+    ? Tokenize<Rest, {
       error: State['error'],
       tokens: State['tokens'],
     }>
