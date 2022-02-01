@@ -6,32 +6,32 @@ const { checks, check } = Test;
 
 checks([
   // ADD
-  check<Tokenizer<'add'>['tokens'], [ADD], Test.Pass>(),
+  check<Tokenizer<'add'>['state']['tokens'], [ADD], Test.Pass>(),
 
   // COMMENT BLOCKS
-  check<Tokenizer<'/* */ add'>['tokens'], [ADD], Test.Pass>(),
-  check<Tokenizer<'/* add */ add'>['tokens'], [ADD], Test.Pass>(),
-  check<Tokenizer<'/* Hello! This is a comment block */ add'>['tokens'], [ADD], Test.Pass>(),
+  check<Tokenizer<'/* */ add'>['state']['tokens'], [ADD], Test.Pass>(),
+  check<Tokenizer<'/* add */ add'>['state']['tokens'], [ADD], Test.Pass>(),
+  check<Tokenizer<'/* Hello! This is a comment block */ add'>['state']['tokens'], [ADD], Test.Pass>(),
 
   // NUMBERS
-  // TODO
+  check<Tokenizer<`/* */ (1)`>['state']['tokens'], [1], Test.Pass>(),
+  check<Tokenizer<'/* 1 */ (1)'>['state']['tokens'], [1], Test.Pass>(),
+  check<Tokenizer<'/* Hello! This is a comment block */ (1)'>['state']['tokens'], [1], Test.Pass>(),
 
   // NON-VALID TOKENS (IGNORED)
   check<Tokenizer<`
                   
- `>, {
+ `>['state'], {
     tokens: [],
     error: "",
-  }, Test.Pass>(),
-  check<Tokenizer<`
-   Example of illegal input
- `>['error'], "", Test.Fail>(),
-
+    }, Test.Pass>(),
+  
+  
   // NON-VALID TOKENS (ERRORS)
   check<Tokenizer<`
     Example of illegal input
-  `>['tokens'], [], Test.Pass>(),
+  `>['state']['tokens'], [], Test.Pass>(),
   check<Tokenizer<`
     Example of illegal input
-  `>['error'], "", Test.Fail>(),
+  `>['state']['error'], "", Test.Fail>(),
 ]);
