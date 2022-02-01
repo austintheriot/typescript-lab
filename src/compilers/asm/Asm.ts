@@ -30,7 +30,12 @@ type DROP = 'drop';
 type DUP = 'dup';
 type COMMENT_START = "/*";
 type COMMENT_END = "*/";
-type VALID_TOKENS = ADD | SUB | PRINT | DROP  | DUP | COMMENT_START | COMMENT_END | number;
+type LOOP_START = 'loop';
+type LOOP_END = 'end';
+/** Executes the following code block if the 2nd last element on the stack is not 0 */
+type IF_START = 'if_start';
+type IF_END = 'if_end';
+type VALID_TOKENS = ADD | SUB | PRINT | DROP | DUP | COMMENT_START | COMMENT_END | number | LOOP_START | LOOP_END | IF_START | IF_END;
 
 interface TokenizerState {
   tokens: VALID_TOKENS[],
@@ -133,6 +138,8 @@ interface InterpreterState {
   stack: VALID_TOKENS[],
   output: string,
   debug: boolean,
+  savedTokens: VALID_TOKENS[],
+  ignoreIfStack: boolean[],
 }
 
 interface DefaultInterpreterState {
@@ -140,6 +147,8 @@ interface DefaultInterpreterState {
   stack: [],
   output: "",
   debug: false,
+  savedTokens: [],
+  ignoreIfStack: [],
 }
 
 /** Error if not a tuple of tokens */
@@ -154,65 +163,149 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   Tokens['length'] extends 0
   ? State['debug'] extends true ? State : State['output']
 
-  // NUMBER
-  : First<Tokens> extends number
+  // IF_END: pop off last ignoreIfStack element
+  : First<Tokens> extends IF_END
   ? Interpret<ToTokensTuple<Shift<Tokens>>, {
-    stack: Push<State['stack'], First<Tokens>>
+    stack: State['stack'],
     heap: State['heap'],
     output: State['output'],
     debug: State['debug'],
+    savedTokens: State['savedTokens'],
+    ignoreIfStack: Pop<State['ignoreIfStack']>,
   }>
 
-  // ADD
-  : First<Tokens> extends ADD
-  ? Interpret<ToTokensTuple<Shift<Tokens>>, {
-    stack: Replace<State['stack'], 2, [ToNumber<Add<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
-    heap: State['heap'],
-    output: State['output'],
-    debug: State['debug'],
-  }>
+  : (State['ignoreIfStack']['length'] extends 0
+    // no ignore stack, continue executing
+    ? true
+    : Last<State['ignoreIfStack']> extends false
+    // should not ignore, continue executing
+    ? true
+    : false) extends true
+  ? (
+    // NUMBER
+    First<Tokens> extends number
+    ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+      stack: Push<State['stack'], First<Tokens>>
+      heap: State['heap'],
+      output: State['output'],
+      debug: State['debug'],
+      savedTokens: State['savedTokens'],
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
 
-  // SUB
-  : First<Tokens> extends SUB
-  ? Interpret<ToTokensTuple<Shift<Tokens>>, {
-    stack: Replace<State['stack'], 2, [ToNumber<Sub<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
-    heap: State['heap'],
-    output: State['output'],
-    debug: State['debug'],
-  }>
+    // ADD
+    : First<Tokens> extends ADD
+    ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+      stack: Replace<State['stack'], 2, [ToNumber<Add<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
+      heap: State['heap'],
+      output: State['output'],
+      debug: State['debug'],
+      savedTokens: State['savedTokens'],
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
 
-  // DROP
-  : First<Tokens> extends DROP
-  ? Interpret<ToTokensTuple<Shift<Tokens>>, {
-    stack: Pop<State['stack']>,
-    heap: State['heap'],
-    output: State['output'],
-    debug: State['debug'],
-  }>
+    // SUB
+    : First<Tokens> extends SUB
+    ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+      stack: Replace<State['stack'], 2, [ToNumber<Sub<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
+      heap: State['heap'],
+      output: State['output'],
+      debug: State['debug'],
+      savedTokens: State['savedTokens'],
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
 
-  // DUP
-  : First<Tokens> extends DUP
-  ? Interpret<ToTokensTuple<Shift<Tokens>>, {
-    stack: Push<State['stack'], ToNumber<Last<State['stack']>>>,
-    heap: State['heap'],
-    output: State['output'],
-    debug: State['debug'],
-  }>
+    // DROP
+    : First<Tokens> extends DROP
+    ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+      stack: Pop<State['stack']>,
+      heap: State['heap'],
+      output: State['output'],
+      debug: State['debug'],
+      savedTokens: State['savedTokens'],
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
 
-  // PRINT
-  : First<Tokens> extends PRINT
-  ? Interpret<ToTokensTuple<Shift<Tokens>>, {
-    stack: Pop<State['stack']>
-    heap: State['heap'],
-    output: `${State['output']}${State['stack'][Dec<State['stack']['length']>]}`,
-    debug: State['debug'],
-  }>
+    // DUP
+    : First<Tokens> extends DUP
+    ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+      stack: Push<State['stack'], ToNumber<Last<State['stack']>>>,
+      heap: State['heap'],
+      output: State['output'],
+      debug: State['debug'],
+      savedTokens: State['savedTokens'],
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
 
-  // debugging
-  : {
-    stack: Tokens,
-    state: State,
-  }
+    // PRINT
+    : First<Tokens> extends PRINT
+    ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+      stack: Pop<State['stack']>
+      heap: State['heap'],
+      output: `${State['output']}${State['stack'][Dec<State['stack']['length']>]}`,
+      debug: State['debug'],
+      savedTokens: State['savedTokens'],
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
+
+    // IF START
+    : First<Tokens> extends IF_START
+    ? (
+      Last<State['stack']> extends 0
+      // skip if block
+      ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+        stack: Pop<State['stack']>,
+        heap: State['heap'],
+        output: State['output'],
+        debug: State['debug'],
+        savedTokens: State['savedTokens'],
+        ignoreIfStack: Push<State['ignoreIfStack'], true>,
+      }>
+
+      // execute if block
+      : Interpret<ToTokensTuple<Shift<Tokens>>, {
+        stack: Pop<State['stack']>,
+        heap: State['heap'],
+        output: State['output'],
+        debug: State['debug'],
+        savedTokens: State['savedTokens'],
+        ignoreIfStack: Push<State['ignoreIfStack'], false>,
+      }>
+    )
+
+    // LOOP START
+    : First<Tokens> extends LOOP_START
+    ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+      stack: State['stack']
+      heap: State['heap'],
+      output: State['output'],
+      debug: State['debug'],
+      savedTokens: Tokens,
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
+
+    // LOOP END
+    : First<Tokens> extends LOOP_END
+    ? Interpret<State['savedTokens'], {
+      stack: State['stack'],
+      heap: State['heap'],
+      output: State['output'],
+      debug: State['debug'],
+      savedTokens: [],
+      ignoreIfStack: State['ignoreIfStack'],
+    }>
+
+    // debugging
+    : {
+      stack: Tokens,
+      state: State,
+    }
+  )
+  // skip current token in if block
+  : Interpret<ToTokensTuple<Shift<Tokens>>, State>
+
+
+
 
 
 checks([
@@ -234,16 +327,44 @@ checks([
     heap: DefaultInterpreterState['heap'],
     output: DefaultInterpreterState['output'],
     stack: DefaultInterpreterState['stack'],
+    savedTokens: DefaultInterpreterState['savedTokens'],
+    ignoreIfStack: DefaultInterpreterState['ignoreIfStack'],
   }>['stack'], [1], Test.Pass>(),
 
-  // DROP
+  // DUP
   check<Interpret<[1, 2, DUP], {
     debug: true,
     heap: DefaultInterpreterState['heap'],
     output: DefaultInterpreterState['output'],
     stack: DefaultInterpreterState['stack'],
+    savedTokens: DefaultInterpreterState['savedTokens'],
+    ignoreIfStack: DefaultInterpreterState['ignoreIfStack'],
   }>['stack'], [1, 2, 2], Test.Pass>(),
+
+  // IF (EXECUTE)
+  check<Interpret<[1, IF_START, 1000, PRINT, IF_END, 2, PRINT]>, "10002", Test.Pass>(),
+
+  // IF (SKIP)
+  check<Interpret<[0, IF_START, 1000, PRINT, IF_END, 2, PRINT]>, "2", Test.Pass>(),
+
+  // IF (NESTED)
+  check<Interpret<[1, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "100010012", Test.Pass>(),
+  check<Interpret<[1, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "10002", Test.Pass>(),
+  check<Interpret<[0, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "2", Test.Pass>(),
+  check<Interpret<[0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "2", Test.Pass>(),
+
+  // check<Interpret<[1, 100, IF_START, 1000, PRINT, IF_END], {
+  //   debug: true,
+  //   heap: DefaultInterpreterState['heap'],
+  //   output: DefaultInterpreterState['output'],
+  //   stack: DefaultInterpreterState['stack'],
+  //   savedTokens: DefaultInterpreterState['savedTokens'],
+  //   ignoreIfStack: DefaultInterpreterState['ignoreIfStack'],
+  // }>, "1000", Test.Pass>(),
 
   // COMBINATIONS OF INSTRUCTIONS
   check<Interpret<[10, 1, SUB, 5, ADD, DUP, PRINT, 2, ADD, PRINT]>, "1416", Test.Pass>(),
+
+  // LOOP
+  // check<Interpret<[LOOP_START, 1, PRINT, LOOP_END]>, "1", Test.Pass>(),
 ]);
