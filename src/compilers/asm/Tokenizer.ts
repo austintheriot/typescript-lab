@@ -1,5 +1,5 @@
 import { IntegerMap } from '../math/IntegerMap';
-import { ADD, COMMENT_END, COMMENT_START, NUMBER_END, NUMBER_START, SEPARATION_TOKEN, VALID_TOKENS } from './Tokens';
+import { ADD, COMMENT_END, COMMENT_START, DROP, DUP, IF_END, IF_START, NUMBER_END, NUMBER_START, PRINT, SEPARATION_TOKEN, SUB, VALID_TOKENS, WHILE_END, WHILE_START } from './Tokens';
 
 interface TokenizerState {
   tokens: VALID_TOKENS[],
@@ -28,6 +28,62 @@ export type Tokenizer<Source extends string, State extends TokenizerState = Toke
   ? Tokenizer<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], ADD],
+  }>
+
+  // SUB
+  : Source extends `${SUB}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], SUB],
+  }>
+
+  // PRINT
+  : Source extends `${PRINT}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], PRINT],
+  }>
+
+  // DROP
+  : Source extends `${DROP}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], DROP],
+  }>
+  
+  // WHILE_START
+  : Source extends `${WHILE_START}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], WHILE_START],
+  }>
+
+  // WHILE_END
+  : Source extends `${WHILE_END}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], WHILE_END],
+  }>
+
+  // IF_START
+  : Source extends `${IF_START}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], IF_START],
+  }>
+
+  // IF_END
+  : Source extends `${IF_END}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], IF_END],
+  }>
+
+  // DUP
+  : Source extends `${DUP}${infer Rest}`
+  ? Tokenizer<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], DUP],
   }>
 
   // COMMENT: ignore comment
