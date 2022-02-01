@@ -397,10 +397,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   // unexpected token reached: dump current state for debugging
   : Dump<Tokens, State>;
 
-
-
-
-
 checks([
   // PRINT
   check<Interpret<[1, PRINT]>, "1", Test.Pass>(),
@@ -476,9 +472,18 @@ checks([
   check<Interpret<[0, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "2", Test.Pass>(),
   check<Interpret<[0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "2", Test.Pass>(),
 
-  // LOOP (ONCE)
+  // WHILE LOOP (ONCE)
   check<Interpret<[1, WHILE_START, 1, PRINT, 0, WHILE_END]>, "1", Test.Pass>(),
 
-  // INFINITE LOOP (INTERNAL MAX CALLS REACHED)
+  // IF IN WHILE LOOP
+  check<Interpret<[1, WHILE_START, 1, IF_START, 1, PRINT, 0, IF_END, WHILE_END]>, "1", Test.Pass>(),
+
+  // NESTED IFS IN WHILE LOOP
+  check<Interpret<[1, WHILE_START, 1, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "100010012", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 1, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "10002", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 0, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "2", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "2", Test.Pass>(),
+
+  // INFINITE WHILE LOOP (INTERNAL MAX CALLS REACHED)
   check<Interpret<[1, WHILE_START, 1, PRINT, 1, WHILE_END]>['state']['output'], "1111111111111111", Test.Pass>(),
 ]);
