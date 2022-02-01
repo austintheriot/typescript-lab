@@ -16,11 +16,15 @@ type NEWLINE = "\n";
 type IGNORED_TOKENS = SPACE | NEWLINE;
 
 // valid tokens
+/** Add last 2 elements on the stack together */
 type ADD = 'add';
+/** Print out the last element on the stack to output */
 type PRINT = 'print';
+/** Drop the last element on the stack */
+type DROP = 'drop';
 type COMMENT_START = "/*";
 type COMMENT_END = "*/";
-type VALID_TOKENS = ADD | PRINT | COMMENT_START | COMMENT_END | number;
+type VALID_TOKENS = ADD | PRINT | DROP | COMMENT_START | COMMENT_END | number;
 
 interface TokenizerState {
   tokens: VALID_TOKENS[],
@@ -122,12 +126,14 @@ interface InterpreterState {
   heap: unknown[],
   stack: VALID_TOKENS[],
   output: string,
+  debug: boolean,
 }
 
 interface DefaultInterpreterState {
   heap: [],
   stack: [],
   output: "",
+  debug: false,
 }
 
 /** Error if not a tuple of tokens */
@@ -140,7 +146,7 @@ type ToNumber<T> = T extends number ? T : never;
 export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterState = DefaultInterpreterState> =
   // no more instructions on the stack
   Tokens['length'] extends 0
-  ? State['output']
+  ? State['debug'] extends true ? State : State['output']
 
   // NUMBER
   : First<Tokens> extends number
@@ -148,6 +154,7 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     stack: Push<State['stack'], First<Tokens>>
     heap: State['heap'],
     output: State['output'],
+    debug:  State['debug'],
   }>
 
   // ADD
@@ -156,6 +163,16 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     stack: Replace<State['stack'], 2, [ToNumber<Add<LastN<State['stack'], 1>, LastN<State['stack'], 0>>>]>
     heap: State['heap'],
     output: State['output'],
+    debug:  State['debug'],
+  }>
+
+  // DROP
+  : First<Tokens> extends DROP
+  ? Interpret<ToTokensTuple<Shift<Tokens>>, {
+    stack: Pop<State['stack']>,
+    heap: State['heap'],
+    output: State['output'],
+    debug:  State['debug'],
   }>
 
   // PRINT
@@ -164,6 +181,7 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     stack: Pop<State['stack']>
     heap: State['heap'],
     output: `${State['output']}${State['stack'][Dec<State['stack']['length']>]}`,
+    debug:  State['debug'],
   }>
 
   // debugging
@@ -175,7 +193,16 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
 
 checks([
   // ADD
+  check<Interpret<[1, 2, ADD, PRINT]>, "3", Test.Pass>(),
   check<Interpret<[1, 2, ADD, 5, ADD, PRINT]>, "8", Test.Pass>(),
+
+  // DROP
+  check<Interpret<[1, 2, DROP], {
+    debug: true,
+    heap: DefaultInterpreterState['heap'],
+    output: DefaultInterpreterState['output'],
+    stack: DefaultInterpreterState['stack'],
+  }>['stack'], [1], Test.Pass>(),
 
   // PRINT
   check<Interpret<[1, PRINT]>, "1", Test.Pass>(),
