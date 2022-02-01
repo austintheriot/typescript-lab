@@ -14,10 +14,12 @@ checks([
   // ADD
   check<Interpret<[1, 2, ADD, PRINT]>, "3", Test.Pass>(),
   check<Interpret<[1, 2, ADD, 5, ADD, PRINT]>, "8", Test.Pass>(),
+  check<Interpret<[400, 100, ADD, 5, ADD, PRINT]>, "505", Test.Pass>(),
 
   // SUB
   check<Interpret<[3, 2, SUB, PRINT]>, "1", Test.Pass>(),
   check<Interpret<[10, 1, SUB, 5, SUB, PRINT]>, "4", Test.Pass>(),
+  check<Interpret<[400, 200, SUB, 5, SUB, PRINT]>, "195", Test.Pass>(),
 
   // DROP
   check<Interpret<[1, 2, DROP], DefaultWithDebug>['state']['stack'], [1], Test.Pass>(),
