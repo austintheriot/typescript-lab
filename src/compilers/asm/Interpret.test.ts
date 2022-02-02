@@ -29,10 +29,10 @@ checks([
   check<Interpret<[1, 2, DUP], DefaultWithDebug>['state']['stack'], [1, 2, 2], Test.Pass>(),
 
   // WRITE
-  check<Interpret<[1, 2, WRITE], DefaultWithDebug>['state']['heap'], [0, 2, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
-  check<Interpret<[8, 999, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 999, 0], Test.Pass>(),
+  check<Interpret<[2, 1, WRITE], DefaultWithDebug>['state']['heap'], [0, 2, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
+  check<Interpret<[999, 8, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 999, 0], Test.Pass>(),
   // out of bounds index
-  check<Interpret<[11, 2, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
+  check<Interpret<[2, 11, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
 
   // SWAP
   check<Interpret<[1, 2, SWAP], DefaultWithOverwrite<{
@@ -49,17 +49,17 @@ checks([
     heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
   }>>['state']['heap'], never, Test.Pass>(),
 
-   // READ
-   check<Interpret<[1, READ], DefaultWithOverwrite<{
+  // READ
+  check<Interpret<[1, READ], DefaultWithOverwrite<{
     debug: true,
     heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
-   }>>['state']['stack'], [8], Test.Pass>(),
-   check<Interpret<[8, READ], DefaultWithOverwrite<{
+  }>>['state']['stack'], [8], Test.Pass>(),
+  check<Interpret<[8, READ], DefaultWithOverwrite<{
     debug: true,
     heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
-   }>>['state']['stack'], [1], Test.Pass>(),
-   // out of bounds read
-   check<Interpret<[9, READ], DefaultWithOverwrite<{
+  }>>['state']['stack'], [1], Test.Pass>(),
+  // out of bounds read
+  check<Interpret<[9, READ], DefaultWithOverwrite<{
     debug: true,
     heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
   }>>['state']['stack'], [never], Test.Pass>(),
@@ -93,4 +93,36 @@ checks([
 
   // INFINITE WHILE LOOP (INTERNAL MAX CALLS REACHED)
   check<Interpret<[1, WHILE_START, 1, PRINT, 1, WHILE_END]>['state']['output'], "1111111111111111", Test.Pass>(),
+
+  // 7 WHILE LOOPS (total allowed before max call stack reached)
+  check<Interpret<[
+    // write 5 into linear memory at index 0
+    7,
+    0,
+    WRITE,
+
+    // start while loop
+    1,
+    WHILE_START,
+    
+    // print value at memory index
+    0,
+    READ,
+    // duplicate the value the new value, so that it's on the top of the
+    // stack for when we decrement it in a second
+    DUP,
+    PRINT,
+
+    // subtract 1 from the value at memory index 0
+    1,
+    SUB,
+    // duplicate the new value, so that it's on the top of the
+    // stack for the next iteration of the while loop
+    DUP,
+    // write the new value into linear memory
+    0,
+    WRITE,
+
+    WHILE_END
+  ], DefaultWithDebug>['state']['output'], "7654321", Test.Pass>(),
 ]);

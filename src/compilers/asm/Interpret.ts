@@ -237,7 +237,7 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     output: State['output'],
     debugValue: State['debugValue'],
    
-    heap: ToNumberTuple<Write<State['heap'], LastN<State['stack'], 1>, LastN<State['stack'], 0>>>,
+    heap: ToNumberTuple<Write<State['heap'], LastN<State['stack'], 0> /* index */, LastN<State['stack'], 1 /* value */>>>,
     instructionPointer: Inc<State['instructionPointer']>,
     stack: PopN<State['stack'], 2>
     calls: Inc<State['calls']>,

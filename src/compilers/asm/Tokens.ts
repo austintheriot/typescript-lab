@@ -35,7 +35,7 @@ export type SINGLE_LINE_COMMENT_END = NEWLINE;
 
 
 // MEMORY INSTRUCTIONS:
-/** Write to linear memory (n1: index, n2: value) */
+/** Write to linear memory (n1: value, n2: index) */
 export type WRITE = 'write';
 /** Swap values of 2 indices in memory (n1: index, n2: index) */
 export type SWAP = 'swap';
