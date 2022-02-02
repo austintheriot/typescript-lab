@@ -1,7 +1,7 @@
 
 import { Test } from 'ts-toolbelt';
 import { Tokenize } from './Tokenize';
-import { ADD, DROP, DUP, IF_END, IF_START, MULTI_LINE_COMMENT_END, MULTI_LINE_COMMENT_START, NUMBER_END, NUMBER_START, PRINT, SINGLE_LINE_COMMENT_START, SUB, SWAP, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, MULTI_LINE_COMMENT_END, MULTI_LINE_COMMENT_START, NUMBER_END, NUMBER_START, PRINT, READ, SINGLE_LINE_COMMENT_START, SUB, SWAP, WHILE_END, WHILE_START, WRITE } from './Tokens';
 const { checks, check } = Test;
 
 checks([
@@ -51,6 +51,9 @@ checks([
 
   // WRITE
   check<Tokenize<WRITE>['state']['tokens'], [WRITE], Test.Pass>(),
+
+  // READ
+  check<Tokenize<READ>['state']['tokens'], [READ], Test.Pass>(),
 
   // SWAP
   check<Tokenize<SWAP>['state']['tokens'], [SWAP], Test.Pass>(),

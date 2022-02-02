@@ -1,7 +1,7 @@
 
 import { Test } from 'ts-toolbelt';
 import { DefaultInterpreterState, Interpret } from './Interpret';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, SWAP, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, WHILE_END, WHILE_START, WRITE } from './Tokens';
 const { checks, check } = Test;
 
 type DefaultWithOverwrite<Overwrite> = Omit<DefaultInterpreterState, keyof Overwrite> & Overwrite;
@@ -48,6 +48,21 @@ checks([
     debug: true,
     heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
   }>>['state']['heap'], never, Test.Pass>(),
+
+   // READ
+   check<Interpret<[1, READ], DefaultWithOverwrite<{
+    debug: true,
+    heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
+   }>>['state']['stack'], [8], Test.Pass>(),
+   check<Interpret<[8, READ], DefaultWithOverwrite<{
+    debug: true,
+    heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
+   }>>['state']['stack'], [1], Test.Pass>(),
+   // out of bounds read
+   check<Interpret<[9, READ], DefaultWithOverwrite<{
+    debug: true,
+    heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
+  }>>['state']['stack'], [never], Test.Pass>(),
 
   // COMBINATIONS OF (NON-BRANCHING) INSTRUCTIONS
   check<Interpret<[10, 1, SUB, 5, ADD, DUP, PRINT, 2, ADD, PRINT]>, "1416", Test.Pass>(),
