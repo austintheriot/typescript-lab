@@ -1,7 +1,7 @@
 
 import { Test } from 'ts-toolbelt';
 import { DefaultInterpreterState, Interpret } from './Interpret';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB } from './Tokens';
 const { checks, check } = Test;
 
 type DefaultWithOverwrite<Overwrite> = Omit<DefaultInterpreterState, keyof Overwrite> & Overwrite;
@@ -21,6 +21,20 @@ checks([
   check<Interpret<[3, 2, SUB, PRINT]>, "1", Test.Pass>(),
   check<Interpret<[10, 1, SUB, 5, SUB, PRINT]>, "4", Test.Pass>(),
   check<Interpret<[400, 200, SUB, 5, SUB, PRINT]>, "195", Test.Pass>(),
+
+  // U8_ADD
+  check<Interpret<[1, 2, U8_ADD, PRINT]>, "3", Test.Pass>(),
+  check<Interpret<[1, 2, U8_ADD, 5, U8_ADD, PRINT]>, "8", Test.Pass>(),
+  check<Interpret<[255, 1, U8_ADD, PRINT]>, "0", Test.Pass>(),
+  // undefined behavior: one operand is too large
+  check<Interpret<[400, 100, U8_ADD, 5, U8_ADD, PRINT]>, string, Test.Pass>(),
+
+  // U8_SUB
+  check<Interpret<[0, 1, U8_SUB, PRINT]>, "255", Test.Pass>(),
+  check<Interpret<[3, 2, U8_SUB, PRINT]>, "1", Test.Pass>(),
+  check<Interpret<[10, 1, U8_SUB, 5, U8_SUB, PRINT]>, "4", Test.Pass>(),
+  // undefined behavior: one operand is too large
+  check<Interpret<[300, 1, U8_SUB, 5, U8_SUB, PRINT]>, string, Test.Pass>(),
 
   // DROP
   check<Interpret<[1, 2, DROP], DefaultWithDebug>['state']['stack'], [1], Test.Pass>(),

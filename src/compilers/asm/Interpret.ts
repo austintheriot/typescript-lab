@@ -4,6 +4,8 @@ import { Add } from '../math/Add';
 import { Dec } from '../math/Dec';
 import { Inc } from '../math/Inc';
 import { Sub } from '../math/Sub';
+import { U8Add } from '../math/U8Add';
+import { U8Sub } from '../math/U8Sub';
 import { Swap } from '../memory/Swap';
 import { Write } from '../memory/Write';
 import { Last } from '../stack/Last';
@@ -11,7 +13,7 @@ import { LastN } from '../stack/LastN';
 import { Pop } from '../stack/Pop';
 import { PopN } from '../stack/PopN';
 import { Replace } from '../stack/Replace';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, VALID_TOKENS, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, U8_ADD, U8_SUB, VALID_TOKENS, WHILE_END, WHILE_START, WRITE } from './Tokens';
 
 export interface InterpreterState {
   instructionPointer: number,
@@ -144,6 +146,38 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
 
     instructionPointer: Inc<State['instructionPointer']>,
     stack: [...State['stack'], Tokens[State['instructionPointer']]],
+    calls: Inc<State['calls']>,
+  }>
+
+  // U8_ADD
+  : Tokens[State['instructionPointer']] extends U8_ADD
+  ? Interpret<Tokens, {
+    heap: State['heap'],
+    output: State['output'],
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    debugValue: State['debugValue'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: Replace<State['stack'], 2, [U8Add<LastN<State['stack'], 1>, LastN<State['stack'], 0>>]>
+    calls: Inc<State['calls']>,
+  }>
+
+  // U8_SUB
+  : Tokens[State['instructionPointer']] extends U8_SUB
+  ? Interpret<Tokens, {
+    heap: State['heap'],
+    output: State['output'],
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    debugValue: State['debugValue'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: Replace<State['stack'], 2, [U8Sub<LastN<State['stack'], 1>, LastN<State['stack'], 0>>]>
     calls: Inc<State['calls']>,
   }>
 

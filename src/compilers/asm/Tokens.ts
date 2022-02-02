@@ -6,6 +6,11 @@ export type ADD = 'add';
 /** Subtract last element on the stack from the second to last element */
 export type SUB = 'sub';
 
+/** Add last 2 elements on the stack together, using wrapping u8 addition */
+export type U8_ADD = 'u8_add';
+/** Subtract last element on the stack from the second to last element, using u8 wrapping subtraction */
+export type U8_SUB = 'u8_sub';
+
 // STACK INSTRUCTIONS:
 /** Drop the last element on the stack */
 export type DROP = 'drop';
@@ -43,7 +48,8 @@ export type SWAP = 'swap';
 export type READ = 'read';
 
 export type VALID_TOKENS = ADD | SUB | PRINT | DROP | DUP | MULTI_LINE_COMMENT_START
-  | MULTI_LINE_COMMENT_END | number | WHILE_START | WHILE_END | IF_START | IF_END | WRITE | SWAP | READ;
+  | MULTI_LINE_COMMENT_END | number | WHILE_START | WHILE_END | IF_START | IF_END | WRITE | SWAP | READ
+  | U8_ADD | U8_SUB;
 
 // SEPARATION TOKENS (all others are considered errors)
 export type SPACE = " ";
