@@ -1,10 +1,11 @@
 
 import { Test } from 'ts-toolbelt';
 import { DefaultInterpreterState, Interpret } from './Interpret';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, SWAP, WHILE_END, WHILE_START, WRITE } from './Tokens';
 const { checks, check } = Test;
 
-type DefaultWithDebug = Omit<DefaultInterpreterState, 'debug'> & { debug: true };
+type DefaultWithOverwrite<Overwrite> = Omit<DefaultInterpreterState, keyof Overwrite> & Overwrite;
+type DefaultWithDebug = DefaultWithOverwrite<{ debug: true }>;
 
 checks([
   // PRINT
@@ -32,6 +33,21 @@ checks([
   check<Interpret<[8, 999, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 999, 0], Test.Pass>(),
   // out of bounds index
   check<Interpret<[11, 2, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
+
+  // SWAP
+  check<Interpret<[1, 2, SWAP], DefaultWithOverwrite<{
+    debug: true,
+    heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  }>>['state']['heap'], [0, 2, 1, 3, 4, 5, 6, 7, 8, 9], Test.Pass>(),
+  check<Interpret<[9, 8, SWAP], DefaultWithOverwrite<{
+    debug: true,
+    heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  }>>['state']['heap'], [0, 1, 2, 3, 4, 5, 6, 7, 9, 8], Test.Pass>(),
+  // error on out of bounds index (since it introduces `undefined` into the heap, which is not a number)
+  check<Interpret<[10, 2, SWAP], DefaultWithOverwrite<{
+    debug: true,
+    heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  }>>['state']['heap'], never, Test.Pass>(),
 
   // COMBINATIONS OF (NON-BRANCHING) INSTRUCTIONS
   check<Interpret<[10, 1, SUB, 5, ADD, DUP, PRINT, 2, ADD, PRINT]>, "1416", Test.Pass>(),

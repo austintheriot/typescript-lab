@@ -1,7 +1,7 @@
 
 import { Test } from 'ts-toolbelt';
 import { Tokenize } from './Tokenize';
-import { ADD, DROP, DUP, IF_END, IF_START, MULTI_LINE_COMMENT_END, MULTI_LINE_COMMENT_START, NUMBER_END, NUMBER_START, PRINT, SINGLE_LINE_COMMENT_START, SUB, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, MULTI_LINE_COMMENT_END, MULTI_LINE_COMMENT_START, NUMBER_END, NUMBER_START, PRINT, SINGLE_LINE_COMMENT_START, SUB, SWAP, WHILE_END, WHILE_START, WRITE } from './Tokens';
 const { checks, check } = Test;
 
 checks([
@@ -49,8 +49,11 @@ checks([
   check<Tokenize<`${MULTI_LINE_COMMENT_START} 1 ${MULTI_LINE_COMMENT_END} ${NUMBER_START}1${NUMBER_END}`>['state']['tokens'], [1], Test.Pass>(),
   check<Tokenize<`${MULTI_LINE_COMMENT_START} Hello! This is a comment block ${MULTI_LINE_COMMENT_END} ${NUMBER_START}1${NUMBER_END}`>['state']['tokens'], [1], Test.Pass>(),
 
-  // WHILE_END
+  // WRITE
   check<Tokenize<WRITE>['state']['tokens'], [WRITE], Test.Pass>(),
+
+  // SWAP
+  check<Tokenize<SWAP>['state']['tokens'], [SWAP], Test.Pass>(),
 
 
   // COMBINATIONS OF TOKENS

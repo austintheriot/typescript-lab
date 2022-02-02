@@ -4,13 +4,14 @@ import { Add } from '../math/Add';
 import { Dec } from '../math/Dec';
 import { Inc } from '../math/Inc';
 import { Sub } from '../math/Sub';
+import { Swap } from '../memory/Swap';
 import { Write } from '../memory/Write';
 import { Last } from '../stack/Last';
 import { LastN } from '../stack/LastN';
 import { Pop } from '../stack/Pop';
 import { PopN } from '../stack/PopN';
 import { Replace } from '../stack/Replace';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, VALID_TOKENS, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, SWAP, VALID_TOKENS, WHILE_END, WHILE_START, WRITE } from './Tokens';
 
 export interface InterpreterState {
   instructionPointer: number,
@@ -234,9 +235,26 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
     output: State['output'],
-    debugValue: State['heap']['length'],
+    debugValue: State['debugValue'],
    
     heap: ToNumberTuple<Write<State['heap'], LastN<State['stack'], 1>, LastN<State['stack'], 0>>>,
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: PopN<State['stack'], 2>
+    calls: Inc<State['calls']>,
+  }>
+
+
+  // SWAP
+  : Tokens[State['instructionPointer']] extends SWAP
+  ? Interpret<Tokens, {
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    output: State['output'],
+    debugValue: State['debugValue'],
+   
+    heap: ToNumberTuple<Swap<State['heap'], LastN<State['stack'], 1>, LastN<State['stack'], 0>>>,
     instructionPointer: Inc<State['instructionPointer']>,
     stack: PopN<State['stack'], 2>
     calls: Inc<State['calls']>,
