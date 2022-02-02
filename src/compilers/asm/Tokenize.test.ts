@@ -1,88 +1,91 @@
 
 import { Test } from 'ts-toolbelt';
 import { Tokenize } from './Tokenize';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, WHILE_END, WHILE_START } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, MULTI_LINE_COMMENT_END, MULTI_LINE_COMMENT_START, NUMBER_END, NUMBER_START, PRINT, SINGLE_LINE_COMMENT_START, SUB, WHILE_END, WHILE_START, WRITE } from './Tokens';
 const { checks, check } = Test;
 
 checks([
   // ADD
-  check<Tokenize<'add'>['state']['tokens'], [ADD], Test.Pass>(),
+  check<Tokenize<ADD>['state']['tokens'], [ADD], Test.Pass>(),
 
   // SUB
-  check<Tokenize<'sub'>['state']['tokens'], [SUB], Test.Pass>(),
+  check<Tokenize<SUB>['state']['tokens'], [SUB], Test.Pass>(),
 
-   // DUP
-  check<Tokenize<'dup'>['state']['tokens'], [DUP], Test.Pass>(),
-   
-   // DROP
-  check<Tokenize<'drop'>['state']['tokens'], [DROP], Test.Pass>(),
-   
-   // PRINT
-  check<Tokenize<'print'>['state']['tokens'], [PRINT], Test.Pass>(),
-   
-   // IF_START
-  check<Tokenize<'if_start'>['state']['tokens'], [IF_START], Test.Pass>(),
-   
-   // IF_END
-  check<Tokenize<'if_end'>['state']['tokens'], [IF_END], Test.Pass>(),
-   
-   // WHILE_START
-  check<Tokenize<'while_start'>['state']['tokens'], [WHILE_START], Test.Pass>(),
-   
-   // WHILE_END
-  check<Tokenize<'while_end'>['state']['tokens'], [WHILE_END], Test.Pass>(),
+  // DUP
+  check<Tokenize<DUP>['state']['tokens'], [DUP], Test.Pass>(),
+
+  // DROP
+  check<Tokenize<DROP>['state']['tokens'], [DROP], Test.Pass>(),
+
+  // PRINT
+  check<Tokenize<PRINT>['state']['tokens'], [PRINT], Test.Pass>(),
+
+  // IF_START
+  check<Tokenize<IF_START>['state']['tokens'], [IF_START], Test.Pass>(),
+
+  // IF_END
+  check<Tokenize<IF_END>['state']['tokens'], [IF_END], Test.Pass>(),
+
+  // WHILE_START
+  check<Tokenize<WHILE_START>['state']['tokens'], [WHILE_START], Test.Pass>(),
+
+  // WHILE_END
+  check<Tokenize<WHILE_END>['state']['tokens'], [WHILE_END], Test.Pass>(),
 
   // MULTI-LINE COMMENT
-  check<Tokenize<'/* */ add'>['state']['tokens'], [ADD], Test.Pass>(),
-  check<Tokenize<'/* add */ add'>['state']['tokens'], [ADD], Test.Pass>(),
-  check<Tokenize<'/* Hello! This is a comment block */ add'>['state']['tokens'], [ADD], Test.Pass>(),
+  check<Tokenize<`${MULTI_LINE_COMMENT_START} ${MULTI_LINE_COMMENT_END} ${ADD}`>['state']['tokens'], [ADD], Test.Pass>(),
+  check<Tokenize<`${MULTI_LINE_COMMENT_START} ${ADD} ${MULTI_LINE_COMMENT_END} ${ADD}`>['state']['tokens'], [ADD], Test.Pass>(),
+  check<Tokenize<`${MULTI_LINE_COMMENT_START} Hello! This is a comment block ${MULTI_LINE_COMMENT_END} ${ADD}`>['state']['tokens'], [ADD], Test.Pass>(),
 
   // SINGLE-LINE COMMENT
-  check<Tokenize<'// this is a single comment'>['state']['tokens'], [], Test.Pass>(),
-  check<Tokenize<'add // this is a single comment'>['state']['tokens'], [ADD], Test.Pass>(),
-  check<Tokenize<`add // this is a comment
-    sub // this is ignored
+  check<Tokenize<`${SINGLE_LINE_COMMENT_START} this is a single comment`>['state']['tokens'], [], Test.Pass>(),
+  check<Tokenize<`add ${SINGLE_LINE_COMMENT_START} this is a single comment`>['state']['tokens'], [ADD], Test.Pass>(),
+  check<Tokenize<`add ${SINGLE_LINE_COMMENT_START} this is a comment
+    sub ${SINGLE_LINE_COMMENT_START} this is ignored
     `>['state']['tokens'], [ADD, SUB], Test.Pass>(),
 
   // NUMBERS
-  check<Tokenize<`/* */ (1)`>['state']['tokens'], [1], Test.Pass>(),
-  check<Tokenize<'/* 1 */ (1)'>['state']['tokens'], [1], Test.Pass>(),
-  check<Tokenize<'/* Hello! This is a comment block */ (1)'>['state']['tokens'], [1], Test.Pass>(),
+  check<Tokenize<`${MULTI_LINE_COMMENT_START} ${MULTI_LINE_COMMENT_END} ${NUMBER_START}1${NUMBER_END}`>['state']['tokens'], [1], Test.Pass>(),
+  check<Tokenize<`${MULTI_LINE_COMMENT_START} 1 ${MULTI_LINE_COMMENT_END} ${NUMBER_START}1${NUMBER_END}`>['state']['tokens'], [1], Test.Pass>(),
+  check<Tokenize<`${MULTI_LINE_COMMENT_START} Hello! This is a comment block ${MULTI_LINE_COMMENT_END} ${NUMBER_START}1${NUMBER_END}`>['state']['tokens'], [1], Test.Pass>(),
+
+  // WHILE_END
+  check<Tokenize<WRITE>['state']['tokens'], [WRITE], Test.Pass>(),
 
 
   // COMBINATIONS OF TOKENS
   check<Tokenize<`
-  /* This is an example of a multiline comment block.
-  It should be ignored by the tokenizer */ 
+  ${MULTI_LINE_COMMENT_START} This is an example of a multiline comment block.
+  It should be ignored by the tokenizer ${MULTI_LINE_COMMENT_END} 
 
-  (999) // << to the left is a number (but this is a comment and is ignored)
-  (1)
-  add
-  (10)
-  sub
-  print
+  ${NUMBER_START}999${NUMBER_END} ${SINGLE_LINE_COMMENT_START} << to the left is a number (but this is a comment and is ignored)
+  ${NUMBER_START}1${NUMBER_END}
+  ${ADD}
+  ${NUMBER_START}10${NUMBER_END}
+  ${SUB}
+  ${PRINT}
 
-  /* 
+  ${MULTI_LINE_COMMENT_START} 
   
   Another comment block that is ignored 
 
   Weeeee! I can write anything I want to here.
   
   
-  */
+  ${MULTI_LINE_COMMENT_END}
 
-  (500)
-  dup
-  drop
-  (1)
-  if_start
-  if_end
-  (1)
-  while_start
-  while_end
+  ${NUMBER_START}500${NUMBER_END}
+  ${DUP}
+  ${DROP}
+  ${NUMBER_START}1${NUMBER_END}
+  ${IF_START}
+  ${IF_END}
+  ${NUMBER_START}1${NUMBER_END}
+  ${WHILE_START}
+  ${WHILE_END}
   
 
-  // more useless comments :)
+  ${SINGLE_LINE_COMMENT_START} more useless comments :)
   `>['state']['tokens'], [999, 1, ADD, 10, SUB, PRINT, 500, DUP, DROP, 1, IF_START, IF_END, 1, WHILE_START, WHILE_END], Test.Pass>(),
 
   // NON-VALID TOKENS (IGNORED)
@@ -91,9 +94,9 @@ checks([
  `>['state'], {
     tokens: [],
     error: "",
-    }, Test.Pass>(),
-  
-  
+  }, Test.Pass>(),
+
+
   // NON-VALID TOKENS (ERRORS)
   check<Tokenize<`
     Example of illegal input

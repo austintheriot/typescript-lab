@@ -22,7 +22,10 @@ export type WHILE_END = 'while_end';
 /** Executes the following code block if the last element on the stack is not 0 */
 export type IF_START = 'if_start';
 export type IF_END = 'if_end';
-export type VALID_TOKENS = ADD | SUB | PRINT | DROP | DUP | MULTI_LINE_COMMENT_START | MULTI_LINE_COMMENT_END | number | WHILE_START | WHILE_END | IF_START | IF_END;
+/** Write to linear memory (n1: index, n2: value) */
+export type WRITE = 'write';
+export type VALID_TOKENS = ADD | SUB | PRINT | DROP | DUP | MULTI_LINE_COMMENT_START
+  | MULTI_LINE_COMMENT_END | number | WHILE_START | WHILE_END | IF_START | IF_END | WRITE;
 
 // SEPARATION TOKENS (all others are considered errors)
 export type SPACE = " ";
