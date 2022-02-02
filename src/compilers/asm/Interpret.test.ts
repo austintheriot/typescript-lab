@@ -1,7 +1,7 @@
 
 import { Test } from 'ts-toolbelt';
 import { DefaultInterpreterState, Interpret } from './Interpret';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, WHILE_END, WHILE_START } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, PRINT, SUB, WHILE_END, WHILE_START, WRITE } from './Tokens';
 const { checks, check } = Test;
 
 type DefaultWithDebug = Omit<DefaultInterpreterState, 'debug'> & { debug: true };
@@ -27,6 +27,11 @@ checks([
   // DUP
   check<Interpret<[1, 2, DUP], DefaultWithDebug>['state']['stack'], [1, 2, 2], Test.Pass>(),
 
+  // WRITE
+  check<Interpret<[1, 2, WRITE], DefaultWithDebug>['state']['heap'], [0, 2, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
+  check<Interpret<[8, 999, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 999, 0], Test.Pass>(),
+  // out of bounds index
+  check<Interpret<[11, 2, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
 
   // COMBINATIONS OF (NON-BRANCHING) INSTRUCTIONS
   check<Interpret<[10, 1, SUB, 5, ADD, DUP, PRINT, 2, ADD, PRINT]>, "1416", Test.Pass>(),
