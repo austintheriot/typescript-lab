@@ -1,7 +1,10 @@
 
 import { Test } from 'ts-toolbelt';
 import { DefaultInterpreterState, Interpret } from './Interpret';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB, GT } from './Tokens';
+import {
+  ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP,
+  WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB, GT, GTE, LT, LTE
+} from './Tokens';
 const { checks, check } = Test;
 
 type DefaultWithOverwrite<Overwrite> = Omit<DefaultInterpreterState, keyof Overwrite> & Overwrite;
@@ -20,7 +23,26 @@ checks([
   // GT
   check<Interpret<[1, 2, GT, PRINT]>['state']['output'], "0", Test.Pass>(),
   check<Interpret<[2, 1, GT, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[1, 1, GT, PRINT]>['state']['output'], "0", Test.Pass>(),
   check<Interpret<[100, 99, GT, PRINT]>['state']['output'], "1", Test.Pass>(),
+
+  // GTE
+  check<Interpret<[1, 2, GTE, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[2, 1, GTE, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[1, 1, GTE, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[100, 99, GTE, PRINT]>['state']['output'], "1", Test.Pass>(),
+
+  // LT
+  check<Interpret<[1, 2, LT, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[2, 1, LT, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[1, 1, LT, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[99, 100, LT, PRINT]>['state']['output'], "1", Test.Pass>(),
+
+  // LTE
+  check<Interpret<[2, 1, LTE, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[1, 2, LTE, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[1, 1, LTE, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[99, 100, LTE, PRINT]>['state']['output'], "1", Test.Pass>(),
 
   // SUB
   check<Interpret<[3, 2, SUB, PRINT]>['state']['output'], "1", Test.Pass>(),

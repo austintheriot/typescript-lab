@@ -3,6 +3,9 @@ import { And } from '../logic/gates';
 import { Add } from '../math/Add';
 import { Dec } from '../math/Dec';
 import { Gt } from '../math/Gt';
+import { Gte } from '../math/Gte';
+import { Lt } from '../math/Lt';
+import { Lte } from '../math/Lte';
 import { Inc } from '../math/Inc';
 import { Sub } from '../math/Sub';
 import { U8Add } from '../math/U8Add';
@@ -14,7 +17,10 @@ import { LastN } from '../stack/LastN';
 import { Pop } from '../stack/Pop';
 import { PopN } from '../stack/PopN';
 import { Replace } from '../stack/Replace';
-import { ADD, DROP, DUP, GT, IF_END, IF_START, PRINT, READ, SUB, SWAP, U8_ADD, U8_SUB, VALID_TOKENS, WHILE_END, WHILE_START, WRITE } from './Tokens';
+import {
+  ADD, DROP, DUP, GT, GTE, IF_END, IF_START, PRINT, READ, SUB, SWAP,
+  U8_ADD, U8_SUB, VALID_TOKENS, WHILE_END, WHILE_START, WRITE, LT, LTE,
+} from './Tokens';
 
 export interface InterpreterState {
   instructionPointer: number,
@@ -271,7 +277,7 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     whilePointerStack: State['whilePointerStack'],
     output: State['output'],
     debugValue: State['debugValue'],
-   
+
     heap: ToNumberTuple<Write<State['heap'], LastN<State['stack'], 0> /* index */, LastN<State['stack'], 1 /* value */>>>,
     instructionPointer: Inc<State['instructionPointer']>,
     stack: PopN<State['stack'], 2>
@@ -287,7 +293,7 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     whilePointerStack: State['whilePointerStack'],
     output: State['output'],
     debugValue: State['debugValue'],
-   
+
     heap: ToNumberTuple<Swap<State['heap'], LastN<State['stack'], 1>, LastN<State['stack'], 0>>>,
     instructionPointer: Inc<State['instructionPointer']>,
     stack: PopN<State['stack'], 2>
@@ -303,7 +309,7 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     whilePointerStack: State['whilePointerStack'],
     output: State['output'],
     debugValue: State['debugValue'],
-   
+
     heap: State['heap'],
     instructionPointer: Inc<State['instructionPointer']>,
     stack: Replace<State['stack'], 1, [ToNumber<State['heap'][ToNumber<Last<State['stack']>>]>]>,
@@ -374,7 +380,7 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     calls: Inc<State['calls']>,
   }>
 
-   // GT
+  // GT
   : Tokens[State['instructionPointer']] extends GT
   ? Interpret<Tokens, {
     heap: State['heap'],
@@ -383,12 +389,60 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
-    debugValue: [Gt<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>],
+    debugValue: State['debugValue'],
 
     instructionPointer: Inc<State['instructionPointer']>,
     stack: Replace<State['stack'], 2, [Gt<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
     calls: Inc<State['calls']>,
   }>
-  
+
+  // GTE
+  : Tokens[State['instructionPointer']] extends GTE
+  ? Interpret<Tokens, {
+    heap: State['heap'],
+    output: State['output'],
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    debugValue: State['debugValue'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: Replace<State['stack'], 2, [Gte<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
+    calls: Inc<State['calls']>,
+  }>
+
+  // LT
+  : Tokens[State['instructionPointer']] extends LT
+  ? Interpret<Tokens, {
+    heap: State['heap'],
+    output: State['output'],
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    debugValue: State['debugValue'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: Replace<State['stack'], 2, [Lt<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
+    calls: Inc<State['calls']>,
+  }>
+
+  // LTE
+  : Tokens[State['instructionPointer']] extends LTE
+  ? Interpret<Tokens, {
+    heap: State['heap'],
+    output: State['output'],
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    debugValue: State['debugValue'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: Replace<State['stack'], 2, [Lte<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
+    calls: Inc<State['calls']>,
+  }>
+
   // unexpected token reached: dump current state for debugging
   : Dump<Tokens, State>;
