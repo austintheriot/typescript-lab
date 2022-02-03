@@ -2,7 +2,7 @@ import { IntegerMap } from '../math/IntegerMap';
 import {
   ADD, MULTI_LINE_COMMENT_END, MULTI_LINE_COMMENT_START, DROP, DUP, IF_END, IF_START,
   NUMBER_END, NUMBER_START, PRINT, SEPARATION_TOKEN, SINGLE_LINE_COMMENT_START, SUB,
-  VALID_TOKENS, WHILE_END, WHILE_START, SINGLE_LINE_COMMENT_END, WRITE, SWAP, READ, U8_ADD, U8_SUB
+  VALID_TOKENS, WHILE_END, WHILE_START, SINGLE_LINE_COMMENT_END, WRITE, SWAP, READ, U8_ADD, U8_SUB, EQ, GT, GTE, LT, LTE, NEQ
 } from './Tokens';
 
 interface TokenizerState {
@@ -123,6 +123,48 @@ export type Tokenize<Source extends string, State extends TokenizerState = Token
   ? Tokenize<Rest, {
     error: State['error'],
     tokens: [...State['tokens'], SWAP],
+  }>
+
+  // GT: requires separation token to disambiguate with GTE
+  : Source extends `${GT}${SEPARATION_TOKEN}${infer Rest}`
+  ? Tokenize<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], GT],
+  }>
+
+  // GTE : requires separation token to disambiguate with GT
+  : Source extends `${GTE}${SEPARATION_TOKEN}${infer Rest}`
+  ? Tokenize<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], GTE],
+  }>
+
+  // LT: requires separation token to disambiguate with LTE
+  : Source extends `${LT}${SEPARATION_TOKEN}${infer Rest}`
+  ? Tokenize<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], LT],
+  }>
+
+  // LTE: requires separation token to disambiguate with LT
+  : Source extends `${LTE}${SEPARATION_TOKEN}${infer Rest}`
+  ? Tokenize<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], LTE],
+  }>
+
+  // EQ
+  : Source extends `${EQ}${infer Rest}`
+  ? Tokenize<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], EQ],
+  }>
+
+  // NEQ
+  : Source extends `${NEQ}${infer Rest}`
+  ? Tokenize<Rest, {
+    error: State['error'],
+    tokens: [...State['tokens'], NEQ],
   }>
 
   // MULTI-LINE COMMENT: ignore comment
