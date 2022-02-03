@@ -1,14 +1,12 @@
 
 import { Test } from 'ts-toolbelt';
-import { DefaultInterpreterState, Interpret } from './Interpret';
+import { DefaultInterpreterState, DefaultWithOverwrite, Interpret } from './Interpret';
 import {
   ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP,
   WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB, GT, GTE, LT, LTE,
   EQ, NEQ,
 } from './Tokens';
 const { checks, check } = Test;
-
-type DefaultWithOverwrite<Overwrite> = Omit<DefaultInterpreterState, keyof Overwrite> & Overwrite;
 
 checks([
   // PRINT
@@ -89,31 +87,25 @@ checks([
 
   // SWAP
   check<Interpret<[1, 2, SWAP], DefaultWithOverwrite<{
-    debug: true,
     heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
   }>>['state']['heap'], [0, 2, 1, 3, 4, 5, 6, 7, 8, 9], Test.Pass>(),
   check<Interpret<[9, 8, SWAP], DefaultWithOverwrite<{
-    debug: true,
     heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
   }>>['state']['heap'], [0, 1, 2, 3, 4, 5, 6, 7, 9, 8], Test.Pass>(),
   // error on out of bounds index (since it introduces `undefined` into the heap, which is not a number)
   check<Interpret<[10, 2, SWAP], DefaultWithOverwrite<{
-    debug: true,
     heap: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
   }>>['state']['heap'], never, Test.Pass>(),
 
   // READ
   check<Interpret<[1, READ], DefaultWithOverwrite<{
-    debug: true,
     heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
   }>>['state']['stack'], [8], Test.Pass>(),
   check<Interpret<[8, READ], DefaultWithOverwrite<{
-    debug: true,
     heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
   }>>['state']['stack'], [1], Test.Pass>(),
   // out of bounds read
   check<Interpret<[9, READ], DefaultWithOverwrite<{
-    debug: true,
     heap: [9, 8, 7, 6, 5, 4, 3, 2, 1],
   }>>['state']['stack'], [never], Test.Pass>(),
 
@@ -145,7 +137,9 @@ checks([
   check<Interpret<[1, WHILE_START, 0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>['state']['output'], "2", Test.Pass>(),
 
   // INFINITE WHILE LOOP (INTERNAL MAX CALLS REACHED)
-  check<Interpret<[1, WHILE_START, 1, PRINT, 1, WHILE_END]>['state']['output'], "1111111111111111", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 1, PRINT, 1, WHILE_END], DefaultWithOverwrite<{
+    maxCalls: 80,
+  }>>['state']['output'], "1111111111111111", Test.Pass>(),
 
   // 7 WHILE LOOPS (total allowed before max call stack reached)
   check<Interpret<[
