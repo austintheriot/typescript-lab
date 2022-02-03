@@ -17,6 +17,11 @@ checks([
   check<Interpret<[1, 2, ADD, 5, ADD, PRINT]>, "8", Test.Pass>(),
   check<Interpret<[400, 100, ADD, 5, ADD, PRINT]>, "505", Test.Pass>(),
 
+  // GT
+  check<Interpret<[1, 2, GT, PRINT]>, "0", Test.Pass>(),
+  check<Interpret<[2, 1, GT, PRINT]>, "1", Test.Pass>(),
+  check<Interpret<[100, 99, GT, PRINT]>, "1", Test.Pass>(),
+
   // SUB
   check<Interpret<[3, 2, SUB, PRINT]>, "1", Test.Pass>(),
   check<Interpret<[10, 1, SUB, 5, SUB, PRINT]>, "4", Test.Pass>(),
