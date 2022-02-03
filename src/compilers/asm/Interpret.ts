@@ -78,7 +78,7 @@ type Dump<Tokens extends VALID_TOKENS[], State extends InterpreterState> = {
 export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterState = DefaultInterpreterState> =
   // no more instructions left to read
   State['instructionPointer'] extends Tokens['length']
-  ? State['debug'] extends true ? Dump<Tokens, State> : State['output']
+  ? Dump<Tokens, State>
 
   // internal stack reached
   // dump stack before TypeScript throws an error
@@ -383,10 +383,10 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
-    debugValue: State['debugValue'],
+    debugValue: [Gt<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>],
 
     instructionPointer: Inc<State['instructionPointer']>,
-    stack: Replace<State['stack'], 2, [Gt<LastN<State['stack'], 1>, Last<State['stack']>>]>
+    stack: Replace<State['stack'], 2, [Gt<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
     calls: Inc<State['calls']>,
   }>
   

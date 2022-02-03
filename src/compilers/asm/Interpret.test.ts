@@ -1,7 +1,7 @@
 
 import { Test } from 'ts-toolbelt';
 import { DefaultInterpreterState, Interpret } from './Interpret';
-import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB } from './Tokens';
+import { ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP, WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB, GT } from './Tokens';
 const { checks, check } = Test;
 
 type DefaultWithOverwrite<Overwrite> = Omit<DefaultInterpreterState, keyof Overwrite> & Overwrite;
@@ -9,37 +9,37 @@ type DefaultWithDebug = DefaultWithOverwrite<{ debug: true }>;
 
 checks([
   // PRINT
-  check<Interpret<[1, PRINT]>, "1", Test.Pass>(),
-  check<Interpret<[1, PRINT, 2, PRINT]>, "12", Test.Pass>(),
+  check<Interpret<[1, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[1, PRINT, 2, PRINT]>['state']['output'], "12", Test.Pass>(),
 
   // ADD
-  check<Interpret<[1, 2, ADD, PRINT]>, "3", Test.Pass>(),
-  check<Interpret<[1, 2, ADD, 5, ADD, PRINT]>, "8", Test.Pass>(),
-  check<Interpret<[400, 100, ADD, 5, ADD, PRINT]>, "505", Test.Pass>(),
+  check<Interpret<[1, 2, ADD, PRINT]>['state']['output'], "3", Test.Pass>(),
+  check<Interpret<[1, 2, ADD, 5, ADD, PRINT]>['state']['output'], "8", Test.Pass>(),
+  check<Interpret<[400, 100, ADD, 5, ADD, PRINT]>['state']['output'], "505", Test.Pass>(),
 
   // GT
-  check<Interpret<[1, 2, GT, PRINT]>, "0", Test.Pass>(),
-  check<Interpret<[2, 1, GT, PRINT]>, "1", Test.Pass>(),
-  check<Interpret<[100, 99, GT, PRINT]>, "1", Test.Pass>(),
+  check<Interpret<[1, 2, GT, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[2, 1, GT, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[100, 99, GT, PRINT]>['state']['output'], "1", Test.Pass>(),
 
   // SUB
-  check<Interpret<[3, 2, SUB, PRINT]>, "1", Test.Pass>(),
-  check<Interpret<[10, 1, SUB, 5, SUB, PRINT]>, "4", Test.Pass>(),
-  check<Interpret<[400, 200, SUB, 5, SUB, PRINT]>, "195", Test.Pass>(),
+  check<Interpret<[3, 2, SUB, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[10, 1, SUB, 5, SUB, PRINT]>['state']['output'], "4", Test.Pass>(),
+  check<Interpret<[400, 200, SUB, 5, SUB, PRINT]>['state']['output'], "195", Test.Pass>(),
 
   // U8_ADD
-  check<Interpret<[1, 2, U8_ADD, PRINT]>, "3", Test.Pass>(),
-  check<Interpret<[1, 2, U8_ADD, 5, U8_ADD, PRINT]>, "8", Test.Pass>(),
-  check<Interpret<[255, 1, U8_ADD, PRINT]>, "0", Test.Pass>(),
+  check<Interpret<[1, 2, U8_ADD, PRINT]>['state']['output'], "3", Test.Pass>(),
+  check<Interpret<[1, 2, U8_ADD, 5, U8_ADD, PRINT]>['state']['output'], "8", Test.Pass>(),
+  check<Interpret<[255, 1, U8_ADD, PRINT]>['state']['output'], "0", Test.Pass>(),
   // undefined behavior: one operand is too large
-  check<Interpret<[400, 100, U8_ADD, 5, U8_ADD, PRINT]>, string, Test.Pass>(),
+  check<Interpret<[400, 100, U8_ADD, 5, U8_ADD, PRINT]>['state']['output'], string, Test.Pass>(),
 
   // U8_SUB
-  check<Interpret<[0, 1, U8_SUB, PRINT]>, "255", Test.Pass>(),
-  check<Interpret<[3, 2, U8_SUB, PRINT]>, "1", Test.Pass>(),
-  check<Interpret<[10, 1, U8_SUB, 5, U8_SUB, PRINT]>, "4", Test.Pass>(),
+  check<Interpret<[0, 1, U8_SUB, PRINT]>['state']['output'], "255", Test.Pass>(),
+  check<Interpret<[3, 2, U8_SUB, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[10, 1, U8_SUB, 5, U8_SUB, PRINT]>['state']['output'], "4", Test.Pass>(),
   // undefined behavior: one operand is too large
-  check<Interpret<[300, 1, U8_SUB, 5, U8_SUB, PRINT]>, string, Test.Pass>(),
+  check<Interpret<[300, 1, U8_SUB, 5, U8_SUB, PRINT]>['state']['output'], string, Test.Pass>(),
 
   // DROP
   check<Interpret<[1, 2, DROP], DefaultWithDebug>['state']['stack'], [1], Test.Pass>(),
@@ -84,7 +84,7 @@ checks([
   }>>['state']['stack'], [never], Test.Pass>(),
 
   // COMBINATIONS OF (NON-BRANCHING) INSTRUCTIONS
-  check<Interpret<[10, 1, SUB, 5, ADD, DUP, PRINT, 2, ADD, PRINT]>, "1416", Test.Pass>(),
+  check<Interpret<[10, 1, SUB, 5, ADD, DUP, PRINT, 2, ADD, PRINT]>['state']['output'], "1416", Test.Pass>(),
 
   // IF (EXECUTE)
   check<Interpret<[1, IF_START, 1000, PRINT, IF_END, 2, PRINT], DefaultWithDebug>['state']['output'], "10002", Test.Pass>(),
@@ -93,22 +93,22 @@ checks([
   check<Interpret<[0, IF_START, 1000, PRINT, IF_END, 2, PRINT], DefaultWithDebug>['state']['output'], "2", Test.Pass>(),
 
   // IF (NESTED)
-  check<Interpret<[1, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "100010012", Test.Pass>(),
-  check<Interpret<[1, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "10002", Test.Pass>(),
-  check<Interpret<[0, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "2", Test.Pass>(),
-  check<Interpret<[0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>, "2", Test.Pass>(),
+  check<Interpret<[1, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>['state']['output'], "100010012", Test.Pass>(),
+  check<Interpret<[1, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>['state']['output'], "10002", Test.Pass>(),
+  check<Interpret<[0, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>['state']['output'], "2", Test.Pass>(),
+  check<Interpret<[0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>['state']['output'], "2", Test.Pass>(),
 
   // WHILE LOOP (ONCE)
-  check<Interpret<[1, WHILE_START, 1, PRINT, 0, WHILE_END]>, "1", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 1, PRINT, 0, WHILE_END]>['state']['output'], "1", Test.Pass>(),
 
   // IF IN WHILE LOOP
-  check<Interpret<[1, WHILE_START, 1, IF_START, 1, PRINT, 0, IF_END, WHILE_END]>, "1", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 1, IF_START, 1, PRINT, 0, IF_END, WHILE_END]>['state']['output'], "1", Test.Pass>(),
 
   // NESTED IFS IN WHILE LOOP
-  check<Interpret<[1, WHILE_START, 1, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "100010012", Test.Pass>(),
-  check<Interpret<[1, WHILE_START, 1, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "10002", Test.Pass>(),
-  check<Interpret<[1, WHILE_START, 0, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "2", Test.Pass>(),
-  check<Interpret<[1, WHILE_START, 0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>, "2", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 1, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>['state']['output'], "100010012", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 1, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>['state']['output'], "10002", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 0, IF_START, 1000, PRINT, 0, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>['state']['output'], "2", Test.Pass>(),
+  check<Interpret<[1, WHILE_START, 0, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT, 0, WHILE_END]>['state']['output'], "2", Test.Pass>(),
 
   // INFINITE WHILE LOOP (INTERNAL MAX CALLS REACHED)
   check<Interpret<[1, WHILE_START, 1, PRINT, 1, WHILE_END]>['state']['output'], "1111111111111111", Test.Pass>(),
