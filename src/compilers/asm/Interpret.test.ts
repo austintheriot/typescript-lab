@@ -3,7 +3,8 @@ import { Test } from 'ts-toolbelt';
 import { DefaultInterpreterState, Interpret } from './Interpret';
 import {
   ADD, DROP, DUP, IF_END, IF_START, PRINT, READ, SUB, SWAP,
-  WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB, GT, GTE, LT, LTE
+  WHILE_END, WHILE_START, WRITE, U8_ADD, U8_SUB, GT, GTE, LT, LTE,
+  EQ, NEQ,
 } from './Tokens';
 const { checks, check } = Test;
 
@@ -43,6 +44,18 @@ checks([
   check<Interpret<[1, 2, LTE, PRINT]>['state']['output'], "1", Test.Pass>(),
   check<Interpret<[1, 1, LTE, PRINT]>['state']['output'], "1", Test.Pass>(),
   check<Interpret<[99, 100, LTE, PRINT]>['state']['output'], "1", Test.Pass>(),
+
+  // EQ
+  check<Interpret<[2, 1, EQ, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[1, 2, EQ, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[1, 1, EQ, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[99, 100, EQ, PRINT]>['state']['output'], "0", Test.Pass>(),
+
+  // NEQ
+  check<Interpret<[2, 1, NEQ, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[1, 2, NEQ, PRINT]>['state']['output'], "1", Test.Pass>(),
+  check<Interpret<[1, 1, NEQ, PRINT]>['state']['output'], "0", Test.Pass>(),
+  check<Interpret<[99, 100, NEQ, PRINT]>['state']['output'], "1", Test.Pass>(),
 
   // SUB
   check<Interpret<[3, 2, SUB, PRINT]>['state']['output'], "1", Test.Pass>(),

@@ -6,6 +6,8 @@ import { Gt } from '../math/Gt';
 import { Gte } from '../math/Gte';
 import { Lt } from '../math/Lt';
 import { Lte } from '../math/Lte';
+import { Eq } from '../math/Eq';
+import { Neq } from '../math/Neq';
 import { Inc } from '../math/Inc';
 import { Sub } from '../math/Sub';
 import { U8Add } from '../math/U8Add';
@@ -20,6 +22,7 @@ import { Replace } from '../stack/Replace';
 import {
   ADD, DROP, DUP, GT, GTE, IF_END, IF_START, PRINT, READ, SUB, SWAP,
   U8_ADD, U8_SUB, VALID_TOKENS, WHILE_END, WHILE_START, WRITE, LT, LTE,
+  EQ, NEQ,
 } from './Tokens';
 
 export interface InterpreterState {
@@ -441,6 +444,38 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
 
     instructionPointer: Inc<State['instructionPointer']>,
     stack: Replace<State['stack'], 2, [Lte<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
+    calls: Inc<State['calls']>,
+  }>
+
+  // EQ
+  : Tokens[State['instructionPointer']] extends EQ
+  ? Interpret<Tokens, {
+    heap: State['heap'],
+    output: State['output'],
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    debugValue: State['debugValue'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: Replace<State['stack'], 2, [Eq<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
+    calls: Inc<State['calls']>,
+  }>
+
+  // NEQ
+  : Tokens[State['instructionPointer']] extends NEQ
+  ? Interpret<Tokens, {
+    heap: State['heap'],
+    output: State['output'],
+    debug: State['debug'],
+    ignoreIfBlock: State['ignoreIfBlock'],
+    ignoreWhileBlock: State['ignoreWhileBlock'],
+    whilePointerStack: State['whilePointerStack'],
+    debugValue: State['debugValue'],
+
+    instructionPointer: Inc<State['instructionPointer']>,
+    stack: Replace<State['stack'], 2, [Neq<LastN<State['stack'], 1>, ToNumber<Last<State['stack']>>>]>
     calls: Inc<State['calls']>,
   }>
 
