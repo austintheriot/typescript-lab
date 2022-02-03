@@ -9,7 +9,6 @@ import {
 const { checks, check } = Test;
 
 type DefaultWithOverwrite<Overwrite> = Omit<DefaultInterpreterState, keyof Overwrite> & Overwrite;
-type DefaultWithDebug = DefaultWithOverwrite<{ debug: true }>;
 
 checks([
   // PRINT
@@ -77,16 +76,16 @@ checks([
   check<Interpret<[300, 1, U8_SUB, 5, U8_SUB, PRINT]>['state']['output'], string, Test.Pass>(),
 
   // DROP
-  check<Interpret<[1, 2, DROP], DefaultWithDebug>['state']['stack'], [1], Test.Pass>(),
+  check<Interpret<[1, 2, DROP], DefaultInterpreterState>['state']['stack'], [1], Test.Pass>(),
 
   // DUP
-  check<Interpret<[1, 2, DUP], DefaultWithDebug>['state']['stack'], [1, 2, 2], Test.Pass>(),
+  check<Interpret<[1, 2, DUP], DefaultInterpreterState>['state']['stack'], [1, 2, 2], Test.Pass>(),
 
   // WRITE
-  check<Interpret<[2, 1, WRITE], DefaultWithDebug>['state']['heap'], [0, 2, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
-  check<Interpret<[999, 8, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 999, 0], Test.Pass>(),
+  check<Interpret<[2, 1, WRITE], DefaultInterpreterState>['state']['heap'], [0, 2, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
+  check<Interpret<[999, 8, WRITE], DefaultInterpreterState>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 999, 0], Test.Pass>(),
   // out of bounds index
-  check<Interpret<[2, 11, WRITE], DefaultWithDebug>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
+  check<Interpret<[2, 11, WRITE], DefaultInterpreterState>['state']['heap'], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], Test.Pass>(),
 
   // SWAP
   check<Interpret<[1, 2, SWAP], DefaultWithOverwrite<{
@@ -122,10 +121,10 @@ checks([
   check<Interpret<[10, 1, SUB, 5, ADD, DUP, PRINT, 2, ADD, PRINT]>['state']['output'], "1416", Test.Pass>(),
 
   // IF (EXECUTE)
-  check<Interpret<[1, IF_START, 1000, PRINT, IF_END, 2, PRINT], DefaultWithDebug>['state']['output'], "10002", Test.Pass>(),
+  check<Interpret<[1, IF_START, 1000, PRINT, IF_END, 2, PRINT], DefaultInterpreterState>['state']['output'], "10002", Test.Pass>(),
 
   // IF (SKIP)
-  check<Interpret<[0, IF_START, 1000, PRINT, IF_END, 2, PRINT], DefaultWithDebug>['state']['output'], "2", Test.Pass>(),
+  check<Interpret<[0, IF_START, 1000, PRINT, IF_END, 2, PRINT], DefaultInterpreterState>['state']['output'], "2", Test.Pass>(),
 
   // IF (NESTED)
   check<Interpret<[1, IF_START, 1000, PRINT, 1, IF_START, 1001, PRINT, IF_END, IF_END, 2, PRINT]>['state']['output'], "100010012", Test.Pass>(),
@@ -178,5 +177,5 @@ checks([
     WRITE,
 
     WHILE_END
-  ], DefaultWithDebug>['state']['output'], "7654321", Test.Pass>(),
+  ], DefaultInterpreterState>['state']['output'], "7654321", Test.Pass>(),
 ]);

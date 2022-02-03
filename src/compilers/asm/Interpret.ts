@@ -30,7 +30,6 @@ export interface InterpreterState {
   heap: number[],
   stack: number[],
   output: string,
-  debug: boolean,
   /** If last element in this stack is true, indicates that current 
    * code block should be ignored until the end of the if block */
   ignoreIfBlock: boolean[],
@@ -51,7 +50,6 @@ export interface DefaultInterpreterState {
   heap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   stack: [],
   output: "",
-  debug: false,
   ignoreIfBlock: [],
   ignoreWhileBlock: [],
   whilePointerStack: [],
@@ -100,7 +98,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     stack: State['stack'],
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
     debugValue: State['debugValue'],
@@ -117,7 +114,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     stack: State['stack'],
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     debugValue: State['debugValue'],
 
@@ -133,7 +129,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
     stack: State['stack'],
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -148,7 +143,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -164,7 +158,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -180,7 +173,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -196,7 +188,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -212,7 +203,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -228,7 +218,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -244,7 +233,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -259,7 +247,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   : Tokens[State['instructionPointer']] extends PRINT
   ? Interpret<Tokens, {
     heap: State['heap'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -274,7 +261,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   // WRITE
   : Tokens[State['instructionPointer']] extends WRITE
   ? Interpret<Tokens, {
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -290,7 +276,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   // SWAP
   : Tokens[State['instructionPointer']] extends SWAP
   ? Interpret<Tokens, {
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -306,7 +291,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   // READ
   : Tokens[State['instructionPointer']] extends READ
   ? Interpret<Tokens, {
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -324,7 +308,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
     debugValue: State['debugValue'],
@@ -340,7 +323,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
     debugValue: State['debugValue'],
@@ -356,7 +338,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     whilePointerStack: State['whilePointerStack'],
     debugValue: State['debugValue'],
@@ -372,7 +353,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     debugValue: State['debugValue'],
 
@@ -388,7 +368,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -404,7 +383,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -420,7 +398,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -436,7 +413,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -452,7 +428,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
@@ -468,7 +443,6 @@ export type Interpret<Tokens extends VALID_TOKENS[], State extends InterpreterSt
   ? Interpret<Tokens, {
     heap: State['heap'],
     output: State['output'],
-    debug: State['debug'],
     ignoreIfBlock: State['ignoreIfBlock'],
     ignoreWhileBlock: State['ignoreWhileBlock'],
     whilePointerStack: State['whilePointerStack'],
