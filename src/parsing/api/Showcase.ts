@@ -40,7 +40,7 @@ checks([
         users: number;
     }, Test.Pass>(),
 
-    check<MatchRouteToResponse<'api/profile/cory-pickrel', RoutesAndResponses>, {
+    check<MatchRouteToResponse<'api/profile/firstname-lastname', RoutesAndResponses>, {
         admin: boolean;
     }, Test.Pass>(),
 
@@ -48,7 +48,7 @@ checks([
         success: boolean;
     }, Test.Pass>(),
 
-    check<MatchRouteToResponse<'api/profile/akeem-mkclennon/settings', RoutesAndResponses>, {
+    check<MatchRouteToResponse<'api/profile/austin-theriot/settings', RoutesAndResponses>, {
         themePreference: 0 | 1 | 2;
     }, Test.Pass>(),
 
