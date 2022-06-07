@@ -37,9 +37,6 @@ export type ParseSearchParams<
     : _Storage;
 
 checks([
-    // empty search params
-    check<ParseSearchParams<''>, {}, Test.Pass>(),
-
     // one search param
     check<ParseSearchParams<'this-is=an-example'>, {
         "this-is": "an-example";
@@ -62,6 +59,14 @@ checks([
         getUser: 'false';
     }, Test.Pass>(),
 
+    // Edge Cases ----------------------------------------
+
+    // empty search params, return empty object
+     check<ParseSearchParams<''>, {}, Test.Pass>(),
+
     // if no search params, return empty object
     check<ParseSearchParams<'api/user'>, {}, Test.Pass>(),
+
+    // wide string type, return empty object
+    check<ParseSearchParams<string>, {}, Test.Pass>(),
 ]);
