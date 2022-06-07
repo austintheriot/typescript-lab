@@ -15,6 +15,8 @@ checks([
     // if no search params, return original string
     check<GetSearchParams<'api/user'>, 'api/user', Test.Pass>(),
 
+    // Edge Cases --------------------------------------------------------------------
+    
     // wide string type
     check<GetSearchParams<string>, string, Test.Pass>(),
 ]);

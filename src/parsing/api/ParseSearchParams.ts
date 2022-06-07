@@ -2,13 +2,13 @@
 import { Test } from 'ts-toolbelt';
 const { checks, check } = Test;
 
-export type QueryParamObject = Record<string, string>;
+export type SearchParamsObject = Record<string, string>;
 
 /** Merges a key-value string pair into an existing interface */
 export type MergeIntoObject<
     Property extends string,
     Value extends string,
-    Object extends QueryParamObject
+    Object extends SearchParamsObject
     > = {
         [Key in keyof Object | Property]: Key extends keyof Object
         // if key is repeated, merge it
