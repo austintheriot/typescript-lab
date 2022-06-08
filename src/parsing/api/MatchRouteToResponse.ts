@@ -5,93 +5,142 @@ import { GetSearchParams } from './GetSearchParams';
 import { ParseSearchParams, SearchParamsObject } from './ParseSearchParams';
 const { checks, check } = Test;
 
+export type HttpRequestMethods = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATH';
+
 /** This is the format that all routes in the array should mimic */
 export interface RouteAndResponse {
     route: unknown;
     response: unknown;
     params?: SearchParamsObject;
+    method?: HttpRequestMethods;
 }
 
 /** Short-circuits if the rest of the array does not match the `RouteAndResponse` type */
 type TestNextRoute<
-    // String - route string to match against
-    S extends string,
-    // Rest - array of routes and responses
-    Rest,
-    // Error - which type to return in the event that parsing fails
-    E = never,
-    // Print Debug - if the function should print the debug information instead of the result
-    P extends boolean = false,
-    // Debug Results - this a collection of data that the generic function accuumulates for debugging
-    D extends any[] = [],
-    > = Rest extends RouteAndResponse[]
-    ? MatchRouteToResponse<S, Rest, E, P, D>
-    : E
+    RestOfTestRoutes,
+    InputString extends string,
+    InputMethod extends HttpRequestMethods,
+    InputError = never,
+    ShouldPrintDebug extends boolean = false,
+    DebugData extends any[] = [],
+> = RestOfTestRoutes extends RouteAndResponse[]
+    ? MatchRouteToResponse<InputString, RestOfTestRoutes, InputMethod, InputError, ShouldPrintDebug, DebugData>
+    : InputError
+
+export type DEFAULT_HTTP_METHOD = 'GET';
+
+
+export type CheckMethod<Args extends {
+    restOfTestRoutes: unknown,
+
+    routeResponse: unknown,
+    routeMethod: unknown,
+
+    inputString: string,
+    inputMethod: HttpRequestMethods,
+    inputError: unknown,
+    shouldPrintDebug: boolean,
+    debugData: any[],
+}> = Args['routeMethod'] extends undefined
+
+    // this route has no defined method, so assume that it is GET
+    ? (
+        Args['inputMethod'] extends DEFAULT_HTTP_METHOD
+
+        // route, params, and method match
+        ? Args['routeResponse']
+
+        // input Method does match the route's inferred 'GET' method
+        : TestNextRoute<Args['restOfTestRoutes'], Args['inputString'], Args['inputMethod'], Args['inputError'], Args['shouldPrintDebug'], [...Args['debugData'], 'method does not match default GET method']>
+    )
+
+    // this route DOES have a defined method: does it match?
+    : (
+        Args['inputMethod'] extends Args['routeMethod']
+
+        // route, params, and method match, return response
+        ? Args['routeResponse']
+
+        // method doesn't match
+        : TestNextRoute<Args['restOfTestRoutes'], Args['inputString'], Args['inputMethod'], Args['inputError'], Args['shouldPrintDebug'], [...Args['debugData'], 'method does not match route\'s method']>
+    )
+
+
+export type CheckParams<Args extends {
+    restOfTestRoutes: unknown,
+
+    routeResponse: unknown,
+    routeMethod: unknown,
+    routeParams: unknown,
+
+    inputString: string,
+    inputMethod: HttpRequestMethods,
+    inputError: unknown,
+
+    shouldPrintDebug: boolean,
+    debugData: any[],
+}> = Args['routeParams'] extends undefined
+    // route matches and no param constraints on Route, this route matches
+    ? Args['routeResponse']
+
+    // route matches and there are params, see if they match
+    : ParseSearchParams<GetSearchParams<Args['inputString']>> extends Args['routeParams']
+
+    // check method
+    ? CheckMethod<{
+        restOfTestRoutes: Args['restOfTestRoutes'],
+        routeResponse: Args['routeResponse'],
+        routeMethod: Args['routeMethod'],
+        inputString: Args['inputString'],
+        inputMethod: Args['inputMethod'],
+        inputError: Args['inputError'],
+        shouldPrintDebug: Args['shouldPrintDebug'],
+        debugData: Args['debugData']
+    }>
+
+    // param types didn't match
+    : TestNextRoute<Args['restOfTestRoutes'], Args['inputString'], Args['inputMethod'], Args['inputError'], Args['shouldPrintDebug'], [...Args['debugData'], 'params do not match']>;
 
 /** Parses a string literal to determine if any of the given routes & responses match the string */
 export type MatchRouteToResponse<
     // String - route string to match against
-    S extends string,
+    InputString extends string,
     // Route - array of routes and responses
-    R extends RouteAndResponse[],
+    InputRoutes extends RouteAndResponse[],
+    // Method - which method is being used to request a resource
+    InputMethod extends HttpRequestMethods = DEFAULT_HTTP_METHOD,
     // Error - which type to return in the event that parsing fails
-    E = never,
+    InputError = never,
     // Print Debug - if the function should print the debug information instead of the result
-    P extends boolean = false,
+    ShouldPrintDebug extends boolean = false,
     // Debug
-    D extends any[] = [],
-    > = R extends [infer Head, ...infer Rest]
+    DebugData extends any[] = [],
+> = InputRoutes extends [infer TestRoute, ...infer RestOfTestRoutes]
     ? (
-        Head extends { route: infer Route, response: infer Response, params?: infer Params }
+        TestRoute extends { route: infer RouteRoute, response: infer RouteResponse, params?: infer RouteParams, method?: infer RouteMethod }
         ? (
-            DeleteSearchParams<S> extends Route ? (
-                Params extends undefined
-
-                // route matches and no params, this route matches
-                ? Response
-
-                // route matches and there are params, see if they match
-                : (
-                    ParseSearchParams<GetSearchParams<S>> extends Params
-
-                    // route and params match, return the response
-                    ? (
-                        P extends true
-
-                        // return debug information
-                        ? [...D, {
-                            sRaw: S,
-                            sWithoutParams: DeleteSearchParams<S>,
-                            parsedParams: ParseSearchParams<GetSearchParams<S>>,
-                            head: Head,
-                        }]
-
-                        // return actual response
-                        : Response
-                    )
-
-                    // param types didn't match
-                    : TestNextRoute<S, Rest, E, P, [...D, 'params do not match']>
-                )
+            DeleteSearchParams<InputString> extends RouteRoute ? (
+                CheckParams<{
+                    restOfTestRoutes: RestOfTestRoutes,
+                    routeResponse: RouteResponse,
+                    routeMethod: RouteMethod,
+                    routeParams: RouteParams,
+                    inputString: InputString,
+                    inputMethod: InputMethod,
+                    inputError: InputError,
+                    shouldPrintDebug: ShouldPrintDebug,
+                    debugData: DebugData
+                }>
             )
             // route does not match
-            : TestNextRoute<S, Rest, E, P, [...D, 'route does not match']>
+            : TestNextRoute<RestOfTestRoutes, InputString, InputMethod, InputError, ShouldPrintDebug, [...DebugData, 'route does not match']>
         )
 
         // element in the array does not match the expected structure, move on
-        : TestNextRoute<S, Rest, E, P, [...D, 'element in the array does not match the expected structure']>
+        : TestNextRoute<RestOfTestRoutes, InputString, InputMethod, InputError, ShouldPrintDebug, [...DebugData, 'element in the array does not match the expected structure']>
     )
 
-    : (
-        // no more elements and nothing to match, give up
-        P extends true
-
-        // return debug information
-        ? D
-
-        // return error
-        : E
-    );
+    : InputError;
 
 
 // Tests -------------------------------------------------------------------------------------
@@ -100,6 +149,10 @@ export type MatchRouteToResponse<
 type RoutesAndResponses = [{
     route: 'api/user',
     response: { token: string },
+}, {
+    route: 'api/user',
+    response: { created: boolean },
+    method: 'POST'
 }, {
     route: 'api/payment',
     response: { purchaseCompleted: boolean }
@@ -119,10 +172,12 @@ type RoutesAndResponses = [{
 }];
 
 checks([
-    check<MatchRouteToResponse<'api/user', []>, never, Test.Pass>(),
-
     check<MatchRouteToResponse<'api/user', RoutesAndResponses>, {
         token: string;
+    }, Test.Pass>(),
+
+    check<MatchRouteToResponse<'api/user', RoutesAndResponses, 'POST'>, {
+        created: boolean;
     }, Test.Pass>(),
 
     check<MatchRouteToResponse<'api/payment', RoutesAndResponses>, {
@@ -153,5 +208,7 @@ checks([
     check<MatchRouteToResponse<string, RoutesAndResponses>, never, Test.Pass>(),
 
     // empty array
-    check<MatchRouteToResponse<'example', []>, never, Test.Pass>(),
+    check<MatchRouteToResponse<'api/user', []>, never, Test.Pass>(),
+
+    check<MatchRouteToResponse<'api/user', [], 'POST'>, never, Test.Pass>(),
 ]);
